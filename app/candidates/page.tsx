@@ -1,0 +1,129 @@
+import PageShell from '../components/PageShell'
+import EmptyState from '../components/EmptyState'
+
+async function getCandidates() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/candidates?limit=20`, {
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+const seniorityColor: Record<string, string> = {
+  INTERN: '#64748b',
+  JUNIOR: '#22c55e',
+  MID: '#3b82f6',
+  SENIOR: '#8b5cf6',
+  LEAD: '#f59e0b',
+  EXECUTIVE: '#ef4444',
+}
+
+const availabilityColor: Record<string, string> = {
+  ACTIVELY_LOOKING: '#22c55e',
+  OPEN_TO_OFFERS: '#f59e0b',
+  NOT_LOOKING: '#64748b',
+}
+
+export default async function CandidatesPage() {
+  const result = await getCandidates()
+  const candidates: Record<string, unknown>[] = result?.data ?? []
+
+  return (
+    <PageShell
+      active="/candidates"
+      title="Candidates"
+      subtitle="Browse and filter talent profiles"
+      badge="Talent Pool"
+    >
+      {candidates.length === 0 ? (
+        <EmptyState
+          icon="👤"
+          message="No candidates yet"
+          hint="Candidates will appear here once the database is connected and seeded."
+        />
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '1rem',
+        }}>
+          {candidates.map((c) => {
+            const seniority = c.seniority_level as string
+            const availability = c.availability_status as string
+            const skills = (c.skills as Array<{ skill: { name: string } }>) ?? []
+            const company = c.current_company as { name: string } | null
+
+            return (
+              <div key={c.id as string} style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '0.75rem',
+                padding: '1.25rem 1.5rem',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{c.full_name as string}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{c.current_title as string}</div>
+                  </div>
+                  <span style={{
+                    background: `${seniorityColor[seniority] ?? '#64748b'}22`,
+                    color: seniorityColor[seniority] ?? '#64748b',
+                    border: `1px solid ${seniorityColor[seniority] ?? '#64748b'}44`,
+                    borderRadius: '0.3rem',
+                    padding: '0.15rem 0.5rem',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                  }}>
+                    {seniority}
+                  </span>
+                </div>
+
+                {company && (
+                  <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+                    @ {company.name}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                  {skills.slice(0, 4).map((s) => (
+                    <span key={s.skill.name} style={{
+                      background: 'rgba(99,102,241,0.12)',
+                      color: '#a5b4fc',
+                      borderRadius: '0.25rem',
+                      padding: '0.15rem 0.5rem',
+                      fontSize: '0.72rem',
+                    }}>
+                      {s.skill.name}
+                    </span>
+                  ))}
+                  {skills.length > 4 && (
+                    <span style={{ color: '#475569', fontSize: '0.72rem', alignSelf: 'center' }}>
+                      +{skills.length - 4} more
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                    📍 {c.location_city as string}, {c.location_country as string}
+                  </span>
+                  <span style={{
+                    color: availabilityColor[availability] ?? '#64748b',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                  }}>
+                    ● {availability?.replace(/_/g, ' ')}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </PageShell>
+  )
+}
