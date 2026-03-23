@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const runtime = 'nodejs'
 
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
     const jobId = searchParams.get('job_id') ?? undefined
     const minScore = parseFloat(searchParams.get('min_score') ?? '0')
 
-    const where: any = {}
+    const where: Prisma.MatchWhereInput = {}
     if (candidateId) where.candidate_id = candidateId
     if (jobId) where.job_id = jobId
     if (minScore > 0) where.overall_score = { gte: minScore }
@@ -32,17 +33,17 @@ export async function GET(req: NextRequest) {
     ])
 
     return NextResponse.json({ data: matches, total, page, limit })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json() as Prisma.MatchCreateInput
     const match = await prisma.match.create({ data: body })
     return NextResponse.json(match, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

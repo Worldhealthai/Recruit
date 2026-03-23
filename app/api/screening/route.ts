@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const runtime = 'nodejs'
 
@@ -11,8 +12,8 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status') ?? undefined
     const candidateId = searchParams.get('candidate_id') ?? undefined
 
-    const where: any = {}
-    if (status) where.status = status
+    const where: Prisma.ScreeningCallWhereInput = {}
+    if (status) where.status = status as Prisma.EnumCallStatusFilter
     if (candidateId) where.candidate_id = candidateId
 
     const [calls, total] = await Promise.all([
@@ -31,17 +32,17 @@ export async function GET(req: NextRequest) {
     ])
 
     return NextResponse.json({ data: calls, total, page, limit })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json() as Prisma.ScreeningCallCreateInput
     const call = await prisma.screeningCall.create({ data: body })
     return NextResponse.json(call, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

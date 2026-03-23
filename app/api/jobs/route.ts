@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const runtime = 'nodejs'
 
@@ -12,10 +13,10 @@ export async function GET(req: NextRequest) {
     const workMode = searchParams.get('work_mode') ?? undefined
     const seniority = searchParams.get('seniority') ?? undefined
 
-    const where: any = {}
-    if (status) where.status = status
-    if (workMode) where.work_mode = workMode
-    if (seniority) where.seniority_level = seniority
+    const where: Prisma.JobWhereInput = {}
+    if (status) where.status = status as Prisma.EnumJobStatusFilter
+    if (workMode) where.work_mode = workMode as Prisma.EnumWorkModeFilter
+    if (seniority) where.seniority_level = seniority as Prisma.EnumSeniorityLevelFilter
 
     const [jobs, total] = await Promise.all([
       prisma.job.findMany({
@@ -29,17 +30,17 @@ export async function GET(req: NextRequest) {
     ])
 
     return NextResponse.json({ data: jobs, total, page, limit })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json() as Prisma.JobCreateInput
     const job = await prisma.job.create({ data: body })
     return NextResponse.json(job, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

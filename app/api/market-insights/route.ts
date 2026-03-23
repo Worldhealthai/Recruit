@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const runtime = 'nodejs'
 
@@ -10,8 +11,8 @@ export async function GET(req: NextRequest) {
     const industry = searchParams.get('industry') ?? undefined
     const region = searchParams.get('region') ?? undefined
 
-    const where: any = {}
-    if (type) where.insight_type = type
+    const where: Prisma.MarketInsightWhereInput = {}
+    if (type) where.insight_type = type as Prisma.EnumInsightTypeFilter
     if (industry) where.industry = industry
     if (region) where.region = region
 
@@ -21,17 +22,17 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json({ data: insights })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json() as Prisma.MarketInsightCreateInput
     const insight = await prisma.marketInsight.create({ data: body })
     return NextResponse.json(insight, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
