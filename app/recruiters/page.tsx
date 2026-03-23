@@ -71,7 +71,7 @@ export default async function RecruitersPage() {
                   </span>
                 </div>
 
-                {r.company_name && (
+                {(r.company_name as string | null) && (
                   <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
                     🏢 {r.company_name as string}
                   </div>

@@ -64,7 +64,7 @@ export default async function CompaniesPage() {
                   <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
                     👥 {sizeLabels[size] ?? size} employees
                   </span>
-                  {c.headquarters_country && (
+                  {(c.headquarters_country as string | null) && (
                     <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
                       📍 {c.headquarters_country as string}
                     </span>

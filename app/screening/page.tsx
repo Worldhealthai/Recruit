@@ -93,7 +93,7 @@ export default async function ScreeningPage() {
                   </div>
                 </div>
 
-                {call.ai_summary && (
+                {(call.ai_summary as string | null) && (
                   <p style={{
                     color: '#94a3b8',
                     fontSize: '0.85rem',
@@ -106,10 +106,10 @@ export default async function ScreeningPage() {
                   </p>
                 )}
 
-                {call.scheduled_at && (
+                {(call.scheduled_at as string | null) && (
                   <div style={{ color: '#475569', fontSize: '0.78rem' }}>
                     🕐 {new Date(call.scheduled_at as string).toLocaleString()}
-                    {call.duration_minutes && ` · ${call.duration_minutes as number} min`}
+                    {(call.duration_minutes as number | null) && ` · ${call.duration_minutes as number} min`}
                   </div>
                 )}
               </div>

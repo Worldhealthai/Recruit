@@ -71,13 +71,13 @@ export default async function MarketInsightsPage() {
                   )}
                 </div>
 
-                {ins.location_country && (
+                {(ins.location_country as string | null) && (
                   <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
                     📍 {ins.location_city ? `${ins.location_city as string}, ` : ''}{ins.location_country as string}
                   </div>
                 )}
 
-                {ins.avg_salary_usd && (
+                {(ins.avg_salary_usd as number | null) && (
                   <div style={{ marginBottom: '0.5rem' }}>
                     <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>Avg Salary </span>
                     <span style={{ fontWeight: 700, color: '#a5b4fc' }}>
@@ -86,7 +86,7 @@ export default async function MarketInsightsPage() {
                   </div>
                 )}
 
-                {(ins.salary_min_usd || ins.salary_max_usd) && (
+                {((ins.salary_min_usd as number | null) || (ins.salary_max_usd as number | null)) && (
                   <div style={{ color: '#64748b', fontSize: '0.78rem', marginBottom: '0.5rem' }}>
                     Range: ${(ins.salary_min_usd as number)?.toLocaleString()} – ${(ins.salary_max_usd as number)?.toLocaleString()}
                   </div>

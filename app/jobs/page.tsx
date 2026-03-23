@@ -107,12 +107,12 @@ export default async function JobsPage() {
                   }}>
                     {workMode?.replace(/_/g, ' ')}
                   </span>
-                  {job.salary_min && job.salary_max && (
+                  {((job.salary_min as number | null) && (job.salary_max as number | null)) && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
                       ${(job.salary_min as number).toLocaleString()} – ${(job.salary_max as number).toLocaleString()}
                     </span>
                   )}
-                  {job.location_country && (
+                  {(job.location_country as string | null) && (
                     <span style={{ color: '#475569', fontSize: '0.75rem' }}>
                       📍 {job.location_city as string}, {job.location_country as string}
                     </span>
