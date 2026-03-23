@@ -1,0 +1,729 @@
+// prisma/schema.prisma
+// Recruitment AI Platform — PostgreSQL via Supabase
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum CompanySize {
+  STARTUP
+  SME
+  MID_MARKET
+  ENTERPRISE
+  MEGA_CORP
+}
+
+enum SeniorityLevel {
+  C_SUITE
+  VP
+  DIRECTOR
+  SENIOR_MANAGER
+  MANAGER
+  SENIOR
+  MID
+  JUNIOR
+  INTERN
+}
+
+enum AvailabilityStatus {
+  ACTIVELY_LOOKING
+  OPEN_TO_OFFERS
+  PASSIVE
+  NOT_LOOKING
+  UNAVAILABLE
+}
+
+enum CandidateSource {
+  LINKEDIN
+  INDEED
+  GLASSDOOR
+  REFERRAL
+  WEBSITE
+  IMPORTED
+  MANUAL
+  OTHER
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum SalaryPeriod {
+  ANNUAL
+  MONTHLY
+  DAILY
+  HOURLY
+}
+
+enum JobUrgency {
+  IMMEDIATE
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum JobStatus {
+  ACTIVE
+  PAUSED
+  FILLED
+  CLOSED
+  DRAFT
+}
+
+enum JobSource {
+  LINKEDIN
+  INDEED
+  GLASSDOOR
+  COMPANY_WEBSITE
+  RECRUITER_POSTED
+  IMPORTED
+  OTHER
+}
+
+enum SkillImportance {
+  REQUIRED
+  PREFERRED
+  NICE_TO_HAVE
+}
+
+enum MatchStatus {
+  SUGGESTED
+  SHORTLISTED
+  CONTACTED
+  SCREENING
+  SUBMITTED
+  INTERVIEW
+  OFFER
+  PLACED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CallType {
+  VOICE
+  VIDEO
+  CHAT
+}
+
+enum CallStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  NO_ANSWER
+  CANCELLED
+  FAILED
+}
+
+enum CandidateInterestLevel {
+  VERY_INTERESTED
+  INTERESTED
+  NEUTRAL
+  NOT_INTERESTED
+}
+
+enum ScreeningRecommendation {
+  STRONG_YES
+  YES
+  MAYBE
+  NO
+  STRONG_NO
+}
+
+enum InsightType {
+  SALARY_BENCHMARK
+  HIRING_TREND
+  SKILL_DEMAND
+  TALENT_FLOW
+  COMPANY_GROWTH
+  INDUSTRY_SHIFT
+}
+
+enum RecruiterRole {
+  ADMIN
+  RECRUITER
+  VIEWER
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  PLATINUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum AlertFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum RecruiterAction {
+  SEARCH
+  VIEW_CANDIDATE
+  VIEW_JOB
+  SAVE_CANDIDATE
+  SHORTLIST
+  CONTACT
+  SCREEN
+  SUBMIT
+  NOTE
+  EXPORT
+}
+
+enum DataPlatform {
+  LINKEDIN
+  INDEED
+  GLASSDOOR
+  COMPANY_WEBSITE
+  PITCHBOOK
+  CRUNCHBASE
+  CUSTOM_SCRAPER
+  API_FEED
+  MANUAL
+}
+
+enum SyncFrequency {
+  REALTIME
+  HOURLY
+  DAILY
+  WEEKLY
+  MANUAL
+}
+
+enum DataSourceStatus {
+  ACTIVE
+  PAUSED
+  ERROR
+  RATE_LIMITED
+}
+
+// ─────────────────────────────────────────────
+// 1. COMPANIES
+// ─────────────────────────────────────────────
+
+model Company {
+  id                  String      @id @default(uuid())
+  name                String
+  domain              String      @unique
+  industry            String
+  sector              String
+  sub_sector          String?
+  company_size        CompanySize
+  employee_count      Int?
+  revenue_range       String?
+  headquarters_city   String
+  headquarters_country String
+  region              String
+  description         String?     @db.Text
+  website             String?
+  linkedin_url        String?
+  logo_url            String?
+  founded_year        Int?
+  funding_stage       String?
+  total_funding       Decimal?    @db.Decimal(18, 2)
+  tech_stack          String[]
+  culture_tags        String[]
+  glassdoor_rating    Float?
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  // Relations
+  departments         Department[]
+  org_roles           OrgRole[]
+  jobs                Job[]
+  candidates          Candidate[]   @relation("CurrentEmployer")
+  experiences         CandidateExperience[]
+  talent_flows_from   TalentFlow[]  @relation("FromCompany")
+  talent_flows_to     TalentFlow[]  @relation("ToCompany")
+
+  @@index([industry, company_size, region])
+  @@map("companies")
+}
+
+// ─────────────────────────────────────────────
+// 2. ORG STRUCTURE
+// ─────────────────────────────────────────────
+
+model Department {
+  id                   String      @id @default(uuid())
+  company_id           String
+  name                 String
+  head_count           Int?
+  budget_range         String?
+  parent_department_id String?
+  created_at           DateTime    @default(now())
+  updated_at           DateTime    @updatedAt
+
+  company              Company     @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  parent_department    Department? @relation("DepartmentHierarchy", fields: [parent_department_id], references: [id])
+  sub_departments      Department[] @relation("DepartmentHierarchy")
+  org_roles            OrgRole[]
+  jobs                 Job[]
+
+  @@map("departments")
+}
+
+model OrgRole {
+  id              String         @id @default(uuid())
+  company_id      String
+  department_id   String?
+  title           String
+  seniority_level SeniorityLevel
+  reports_to_id   String?
+  is_vacant       Boolean        @default(false)
+  candidate_id    String?
+  headcount       Int            @default(1)
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  company         Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  department      Department?    @relation(fields: [department_id], references: [id])
+  reports_to      OrgRole?       @relation("ReportingLine", fields: [reports_to_id], references: [id])
+  direct_reports  OrgRole[]      @relation("ReportingLine")
+  candidate       Candidate?     @relation(fields: [candidate_id], references: [id])
+
+  @@map("org_roles")
+}
+
+// ─────────────────────────────────────────────
+// 3. CANDIDATES
+// ─────────────────────────────────────────────
+
+model Candidate {
+  id                     String             @id @default(uuid())
+  first_name             String
+  last_name              String
+  email                  String?            @unique
+  phone                  String?
+  linkedin_url           String?
+  github_url             String?
+  portfolio_url          String?
+  current_title          String
+  current_company_id     String?
+  current_department     String?
+  seniority_level        SeniorityLevel
+  location_city          String
+  location_country       String
+  region                 String
+  is_remote_open         Boolean            @default(false)
+  is_relocation_open     Boolean            @default(false)
+  salary_current         Decimal?           @db.Decimal(12, 2)
+  salary_currency        String             @default("GBP")
+  salary_expectation_min Decimal?           @db.Decimal(12, 2)
+  salary_expectation_max Decimal?           @db.Decimal(12, 2)
+  notice_period_days     Int?
+  years_experience       Int?
+  availability_status    AvailabilityStatus
+  summary                String?            @db.Text
+  resume_url             String?
+  source                 CandidateSource
+  source_profile_url     String?
+  last_activity_date     DateTime?
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+
+  // Relations
+  current_company        Company?           @relation("CurrentEmployer", fields: [current_company_id], references: [id])
+  skills                 CandidateSkill[]
+  experiences            CandidateExperience[]
+  education              CandidateEducation[]
+  certifications         CandidateCertification[]
+  matches                Match[]
+  screening_calls        ScreeningCall[]
+  org_roles              OrgRole[]
+
+  @@index([location_country, seniority_level, availability_status])
+  @@map("candidates")
+}
+
+model CandidateSkill {
+  id           String           @id @default(uuid())
+  candidate_id String
+  skill_id     String
+  proficiency  SkillProficiency
+  years_used   Int?
+  is_primary   Boolean          @default(false)
+  verified     Boolean          @default(false)
+
+  candidate    Candidate        @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  skill        Skill            @relation(fields: [skill_id], references: [id])
+
+  @@unique([candidate_id, skill_id])
+  @@map("candidate_skills")
+}
+
+model CandidateExperience {
+  id           String    @id @default(uuid())
+  candidate_id String
+  company_id   String?
+  company_name String
+  title        String
+  department   String?
+  start_date   DateTime
+  end_date     DateTime?
+  is_current   Boolean   @default(false)
+  description  String?   @db.Text
+  achievements String[]
+
+  candidate    Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  company      Company?  @relation(fields: [company_id], references: [id])
+
+  @@map("candidate_experiences")
+}
+
+model CandidateEducation {
+  id             String    @id @default(uuid())
+  candidate_id   String
+  institution    String
+  degree         String
+  field_of_study String
+  grade          String?
+  start_year     Int
+  end_year       Int?
+
+  candidate      Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_education")
+}
+
+model CandidateCertification {
+  id             String    @id @default(uuid())
+  candidate_id   String
+  name           String
+  issuing_org    String
+  issue_date     DateTime?
+  expiry_date    DateTime?
+  credential_url String?
+
+  candidate      Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_certifications")
+}
+
+// ─────────────────────────────────────────────
+// 4. SKILLS TAXONOMY
+// ─────────────────────────────────────────────
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  category    String
+  subcategory String?
+  aliases     String[]
+  is_verified Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  candidate_skills CandidateSkill[]
+  job_skills       JobSkill[]
+
+  @@map("skills")
+}
+
+// ─────────────────────────────────────────────
+// 5. JOBS
+// ─────────────────────────────────────────────
+
+model Job {
+  id               String         @id @default(uuid())
+  title            String
+  company_id       String
+  department_id    String?
+  description      String         @db.Text
+  requirements     String?        @db.Text
+  responsibilities String?        @db.Text
+  seniority_level  SeniorityLevel
+  employment_type  EmploymentType
+  work_mode        WorkMode
+  location_city    String?
+  location_country String?
+  region           String?
+  salary_min       Decimal?       @db.Decimal(12, 2)
+  salary_max       Decimal?       @db.Decimal(12, 2)
+  salary_currency  String         @default("GBP")
+  salary_period    SalaryPeriod   @default(ANNUAL)
+  equity_offered   Boolean        @default(false)
+  visa_sponsorship Boolean        @default(false)
+  urgency          JobUrgency     @default(NORMAL)
+  status           JobStatus      @default(ACTIVE)
+  source           JobSource
+  source_url       String?
+  external_id      String?
+  posted_date      DateTime
+  closing_date     DateTime?
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+
+  company          Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  department       Department?    @relation(fields: [department_id], references: [id])
+  skills           JobSkill[]
+  matches          Match[]
+  screening_calls  ScreeningCall[]
+
+  @@index([status, seniority_level, work_mode, location_country])
+  @@map("jobs")
+}
+
+model JobSkill {
+  id         String          @id @default(uuid())
+  job_id     String
+  skill_id   String
+  importance SkillImportance
+  min_years  Int?
+
+  job        Job             @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  skill      Skill           @relation(fields: [skill_id], references: [id])
+
+  @@unique([job_id, skill_id])
+  @@map("job_skills")
+}
+
+// ─────────────────────────────────────────────
+// 6. MATCHING & SCORING
+// ─────────────────────────────────────────────
+
+model Match {
+  id                    String      @id @default(uuid())
+  candidate_id          String
+  job_id                String
+  overall_score         Float
+  skill_match_score     Float
+  experience_match_score Float
+  location_match_score  Float
+  seniority_match_score Float
+  salary_match_score    Float
+  culture_fit_score     Float?
+  ai_reasoning          String?     @db.Text
+  status                MatchStatus @default(SUGGESTED)
+  recruiter_notes       String?     @db.Text
+  created_at            DateTime    @default(now())
+  updated_at            DateTime    @updatedAt
+
+  candidate             Candidate   @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  job                   Job         @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  screening_calls       ScreeningCall[]
+
+  @@unique([candidate_id, job_id])
+  @@index([overall_score(sort: Desc)])
+  @@map("matches")
+}
+
+// ─────────────────────────────────────────────
+// 7. AI SCREENING CALLS
+// ─────────────────────────────────────────────
+
+model ScreeningCall {
+  id                          String                   @id @default(uuid())
+  match_id                    String
+  candidate_id                String
+  job_id                      String
+  scheduled_at                DateTime?
+  started_at                  DateTime?
+  ended_at                    DateTime?
+  duration_seconds            Int?
+  call_type                   CallType
+  status                      CallStatus               @default(PENDING)
+  transcript                  String?                  @db.Text
+  ai_summary                  String?                  @db.Text
+  candidate_interest_level    CandidateInterestLevel?
+  availability_confirmed      Boolean?
+  salary_expectation_confirmed Decimal?                @db.Decimal(12, 2)
+  notice_period_confirmed     Int?
+  key_concerns                String[]
+  recommendation              ScreeningRecommendation?
+  recommendation_reasoning    String?                  @db.Text
+  recording_url               String?
+  created_at                  DateTime                 @default(now())
+  updated_at                  DateTime                 @updatedAt
+
+  match                       Match                    @relation(fields: [match_id], references: [id])
+  candidate                   Candidate                @relation(fields: [candidate_id], references: [id])
+  job                         Job                      @relation(fields: [job_id], references: [id])
+  questions                   ScreeningQuestion[]
+
+  @@map("screening_calls")
+}
+
+model ScreeningQuestion {
+  id                  String        @id @default(uuid())
+  screening_call_id   String
+  question_text       String
+  answer_text         String?       @db.Text
+  ai_score            Float?
+  order               Int
+
+  screening_call      ScreeningCall @relation(fields: [screening_call_id], references: [id], onDelete: Cascade)
+
+  @@map("screening_questions")
+}
+
+// ─────────────────────────────────────────────
+// 8. MARKET INTELLIGENCE
+// ─────────────────────────────────────────────
+
+model MarketInsight {
+  id              String      @id @default(uuid())
+  insight_type    InsightType
+  title           String
+  description     String      @db.Text
+  data_json       Json
+  industry        String?
+  region          String?
+  seniority_level String?
+  valid_from      DateTime
+  valid_until     DateTime?
+  source          String?
+  created_at      DateTime    @default(now())
+
+  @@map("market_insights")
+}
+
+model TalentFlow {
+  id              String   @id @default(uuid())
+  from_company_id String
+  to_company_id   String
+  role_category   String
+  flow_count      Int
+  period_start    DateTime
+  period_end      DateTime
+  created_at      DateTime @default(now())
+
+  from_company    Company  @relation("FromCompany", fields: [from_company_id], references: [id])
+  to_company      Company  @relation("ToCompany", fields: [to_company_id], references: [id])
+
+  @@index([from_company_id, to_company_id])
+  @@map("talent_flows")
+}
+
+// ─────────────────────────────────────────────
+// 9. RECRUITERS & SUBSCRIPTIONS
+// ─────────────────────────────────────────────
+
+model Recruiter {
+  id                           String             @id @default(uuid())
+  email                        String             @unique
+  first_name                   String
+  last_name                    String
+  company_name                 String?
+  phone                        String?
+  role                         RecruiterRole      @default(RECRUITER)
+  subscription_tier            SubscriptionTier   @default(FREE)
+  subscription_status          SubscriptionStatus @default(TRIAL)
+  subscription_start           DateTime?
+  subscription_end             DateTime?
+  max_searches_per_month       Int                @default(50)
+  max_screening_calls_per_month Int               @default(10)
+  max_candidates_saved         Int                @default(100)
+  last_login                   DateTime?
+  created_at                   DateTime           @default(now())
+  updated_at                   DateTime           @updatedAt
+
+  saved_searches               SavedSearch[]
+  activities                   Activity[]
+
+  @@map("recruiters")
+}
+
+model SavedSearch {
+  id              String          @id @default(uuid())
+  recruiter_id    String
+  name            String
+  filters_json    Json
+  alert_enabled   Boolean         @default(false)
+  alert_frequency AlertFrequency?
+  last_run        DateTime?
+  result_count    Int?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+
+  recruiter       Recruiter       @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)
+
+  @@map("saved_searches")
+}
+
+model Activity {
+  id            String          @id @default(uuid())
+  recruiter_id  String
+  action        RecruiterAction
+  entity_type   String
+  entity_id     String
+  metadata_json Json?
+  created_at    DateTime        @default(now())
+
+  recruiter     Recruiter       @relation(fields: [recruiter_id], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+// ─────────────────────────────────────────────
+// 10. DATA SOURCE TRACKING
+// ─────────────────────────────────────────────
+
+model DataSource {
+  id                String           @id @default(uuid())
+  platform          DataPlatform
+  name              String
+  base_url          String?
+  api_key_encrypted String?
+  last_sync_at      DateTime?
+  sync_frequency    SyncFrequency
+  status            DataSourceStatus @default(ACTIVE)
+  records_synced    Int              @default(0)
+  error_log         String?          @db.Text
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+
+  records           DataSourceRecord[]
+
+  @@map("data_sources")
+}
+
+model DataSourceRecord {
+  id             String     @id @default(uuid())
+  data_source_id String
+  entity_type    String
+  entity_id      String
+  external_id    String
+  raw_data_json  Json?
+  last_synced_at DateTime
+  created_at     DateTime   @default(now())
+
+  data_source    DataSource @relation(fields: [data_source_id], references: [id], onDelete: Cascade)
+
+  @@map("data_source_records")
+}
