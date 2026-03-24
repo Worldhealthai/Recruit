@@ -5,14 +5,28 @@ export const runtime = 'nodejs'
 export const maxDuration = 60
 
 // Protect with a secret token — set SEED_SECRET env var in Vercel
-// Call: POST /api/seed  with header  Authorization: Bearer <SEED_SECRET>
+// Call via browser: GET /api/seed?secret=<SEED_SECRET>
+// Call via API:     POST /api/seed  with header  Authorization: Bearer <SEED_SECRET>
+function checkAuth(secret: string | undefined, req: NextRequest): boolean {
+  if (!secret) return true
+  const querySecret = new URL(req.url).searchParams.get('secret')
+  if (querySecret === secret) return true
+  const auth = req.headers.get('authorization') ?? ''
+  return auth === `Bearer ${secret}`
+}
+
+export async function GET(req: NextRequest) {
+  return seedHandler(req)
+}
+
 export async function POST(req: NextRequest) {
+  return seedHandler(req)
+}
+
+async function seedHandler(req: NextRequest) {
   const secret = process.env.SEED_SECRET
-  if (secret) {
-    const auth = req.headers.get('authorization') ?? ''
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!checkAuth(secret, req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
