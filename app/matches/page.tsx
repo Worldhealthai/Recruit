@@ -62,9 +62,10 @@ export default async function MatchesPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {matches.map((m) => {
-            const candidate = m.candidate as { full_name: string; current_title: string } | null
+            const candidate = m.candidate as { first_name: string; last_name: string; current_title: string } | null
             const job = m.job as { title: string; company?: { name: string } } | null
             const status = m.status as string
+            const candidateName = candidate ? `${candidate.first_name} ${candidate.last_name}` : null
 
             return (
               <div key={m.id as string} style={{
@@ -75,7 +76,7 @@ export default async function MatchesPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{candidate?.full_name}</div>
+                    <div style={{ fontWeight: 700 }}>{candidateName}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{candidate?.current_title}</div>
                   </div>
                   <div style={{ fontSize: '1.25rem' }}>→</div>
@@ -100,16 +101,16 @@ export default async function MatchesPage() {
                     <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Overall</span>
                     <ScoreBar score={m.overall_score as number} />
                   </div>
-                  {m.skill_score != null && (
+                  {m.skill_match_score != null && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Skills</span>
-                      <ScoreBar score={m.skill_score as number} />
+                      <ScoreBar score={m.skill_match_score as number} />
                     </div>
                   )}
-                  {m.experience_score != null && (
+                  {m.experience_match_score != null && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Experience</span>
-                      <ScoreBar score={m.experience_score as number} />
+                      <ScoreBar score={m.experience_match_score as number} />
                     </div>
                   )}
                 </div>

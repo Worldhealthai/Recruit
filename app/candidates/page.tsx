@@ -66,7 +66,7 @@ export default async function CandidatesPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{c.full_name as string}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{`${c.first_name as string} ${c.last_name as string}`}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{c.current_title as string}</div>
                   </div>
                   <span style={{

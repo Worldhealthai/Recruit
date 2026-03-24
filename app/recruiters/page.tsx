@@ -44,7 +44,8 @@ export default async function RecruitersPage() {
           gap: '1rem',
         }}>
           {recruiters.map((r) => {
-            const plan = r.subscription_plan as string
+            const tier = r.subscription_tier as string
+            const status = r.subscription_status as string
 
             return (
               <div key={r.id as string} style={{
@@ -55,19 +56,19 @@ export default async function RecruitersPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{r.full_name as string}</div>
+                    <div style={{ fontWeight: 700 }}>{`${r.first_name as string} ${r.last_name as string}`}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{r.email as string}</div>
                   </div>
                   <span style={{
-                    background: `${planColors[plan] ?? '#64748b'}22`,
-                    color: planColors[plan] ?? '#64748b',
-                    border: `1px solid ${planColors[plan] ?? '#64748b'}44`,
+                    background: `${planColors[tier] ?? '#64748b'}22`,
+                    color: planColors[tier] ?? '#64748b',
+                    border: `1px solid ${planColors[tier] ?? '#64748b'}44`,
                     borderRadius: '0.3rem',
                     padding: '0.15rem 0.5rem',
                     fontSize: '0.7rem',
                     fontWeight: 700,
                   }}>
-                    {plan}
+                    {tier}
                   </span>
                 </div>
 
@@ -78,24 +79,24 @@ export default async function RecruitersPage() {
                 )}
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                  {r.monthly_search_quota != null && (
+                  {r.max_searches_per_month != null && (
                     <div style={{ fontSize: '0.78rem' }}>
-                      <div style={{ color: '#475569' }}>Monthly quota</div>
-                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.monthly_search_quota as number).toLocaleString()}</div>
+                      <div style={{ color: '#475569' }}>Search quota</div>
+                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.max_searches_per_month as number).toLocaleString()}/mo</div>
                     </div>
                   )}
-                  {r.searches_used_this_month != null && (
+                  {r.max_screening_calls_per_month != null && (
                     <div style={{ fontSize: '0.78rem' }}>
-                      <div style={{ color: '#475569' }}>Used this month</div>
-                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.searches_used_this_month as number).toLocaleString()}</div>
+                      <div style={{ color: '#475569' }}>Screening quota</div>
+                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.max_screening_calls_per_month as number).toLocaleString()}/mo</div>
                     </div>
                   )}
                 </div>
 
-                {r.is_active != null && (
+                {status && (
                   <div style={{ marginTop: '0.75rem', fontSize: '0.78rem' }}>
-                    <span style={{ color: r.is_active ? '#22c55e' : '#ef4444' }}>
-                      ● {r.is_active ? 'Active' : 'Inactive'}
+                    <span style={{ color: status === 'ACTIVE' || status === 'TRIAL' ? '#22c55e' : '#ef4444' }}>
+                      ● {status}
                     </span>
                   </div>
                 )}

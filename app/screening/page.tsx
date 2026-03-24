@@ -48,10 +48,11 @@ export default async function ScreeningPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {calls.map((call) => {
-            const candidate = call.candidate as { full_name: string } | null
+            const candidate = call.candidate as { first_name: string; last_name: string } | null
             const job = call.job as { title: string } | null
-            const outcome = call.ai_recommendation as string | null
+            const outcome = call.recommendation as string | null
             const status = call.status as string
+            const candidateName = candidate ? `${candidate.first_name} ${candidate.last_name}` : null
 
             return (
               <div key={call.id as string} style={{
@@ -62,7 +63,7 @@ export default async function ScreeningPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{candidate?.full_name}</div>
+                    <div style={{ fontWeight: 700 }}>{candidateName}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>for {job?.title}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -109,7 +110,7 @@ export default async function ScreeningPage() {
                 {(call.scheduled_at as string | null) && (
                   <div style={{ color: '#475569', fontSize: '0.78rem' }}>
                     🕐 {new Date(call.scheduled_at as string).toLocaleString()}
-                    {(call.duration_minutes as number | null) && ` · ${call.duration_minutes as number} min`}
+                    {(call.duration_seconds as number | null) && ` · ${Math.round((call.duration_seconds as number) / 60)} min`}
                   </div>
                 )}
               </div>

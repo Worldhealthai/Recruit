@@ -13,16 +13,13 @@ async function getInsights() {
   }
 }
 
-const trendColors: Record<string, string> = {
-  INCREASING: '#22c55e',
-  STABLE: '#3b82f6',
-  DECREASING: '#ef4444',
-}
-
-const trendIcons: Record<string, string> = {
-  INCREASING: '↑',
-  STABLE: '→',
-  DECREASING: '↓',
+const insightTypeColors: Record<string, string> = {
+  SALARY_BENCHMARK: '#a5b4fc',
+  HIRING_TREND: '#22c55e',
+  SKILL_DEMAND: '#f59e0b',
+  TALENT_FLOW: '#3b82f6',
+  COMPANY_GROWTH: '#8b5cf6',
+  INDUSTRY_SHIFT: '#ef4444',
 }
 
 export default async function MarketInsightsPage() {
@@ -49,7 +46,7 @@ export default async function MarketInsightsPage() {
           gap: '1rem',
         }}>
           {insights.map((ins) => {
-            const trend = ins.demand_trend as string
+            const insightType = ins.insight_type as string
 
             return (
               <div key={ins.id as string} style={{
@@ -58,48 +55,45 @@ export default async function MarketInsightsPage() {
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <div style={{ fontWeight: 700 }}>{ins.skill_name as string}</div>
-                  {trend && (
-                    <span style={{
-                      color: trendColors[trend] ?? '#64748b',
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                    }}>
-                      {trendIcons[trend]} {trend}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', gap: '0.5rem' }}>
+                  <div style={{ fontWeight: 700, flex: 1 }}>{ins.title as string}</div>
+                  <span style={{
+                    color: insightTypeColors[insightType] ?? '#64748b',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}>
+                    {insightType?.replace(/_/g, ' ')}
+                  </span>
+                </div>
+
+                {(ins.description as string | null) && (
+                  <p style={{ color: '#94a3b8', fontSize: '0.82rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
+                    {ins.description as string}
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {(ins.industry as string | null) && (
+                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                      🏭 {ins.industry as string}
+                    </span>
+                  )}
+                  {(ins.region as string | null) && (
+                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                      📍 {ins.region as string}
+                    </span>
+                  )}
+                  {(ins.seniority_level as string | null) && (
+                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                      👤 {(ins.seniority_level as string).replace(/_/g, ' ')}
                     </span>
                   )}
                 </div>
 
-                {(ins.location_country as string | null) && (
-                  <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-                    📍 {ins.location_city ? `${ins.location_city as string}, ` : ''}{ins.location_country as string}
-                  </div>
-                )}
-
-                {(ins.avg_salary_usd as number | null) && (
-                  <div style={{ marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>Avg Salary </span>
-                    <span style={{ fontWeight: 700, color: '#a5b4fc' }}>
-                      ${(ins.avg_salary_usd as number).toLocaleString()} USD
-                    </span>
-                  </div>
-                )}
-
-                {((ins.salary_min_usd as number | null) || (ins.salary_max_usd as number | null)) && (
-                  <div style={{ color: '#64748b', fontSize: '0.78rem', marginBottom: '0.5rem' }}>
-                    Range: ${(ins.salary_min_usd as number)?.toLocaleString()} – ${(ins.salary_max_usd as number)?.toLocaleString()}
-                  </div>
-                )}
-
-                {ins.open_positions_count != null && (
-                  <div style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                    {(ins.open_positions_count as number).toLocaleString()} open positions
-                  </div>
-                )}
-
                 <div style={{ color: '#475569', fontSize: '0.72rem', marginTop: '0.75rem' }}>
-                  Updated {new Date(ins.report_date as string).toLocaleDateString()}
+                  Valid from {new Date(ins.valid_from as string).toLocaleDateString()}
+                  {(ins.valid_until as string | null) && ` · until ${new Date(ins.valid_until as string).toLocaleDateString()}`}
                 </div>
               </div>
             )
