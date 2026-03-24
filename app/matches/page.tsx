@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
 import { prisma } from '@/lib/prisma'
@@ -18,11 +19,16 @@ async function getMatches() {
 }
 
 const statusColors: Record<string, string> = {
-  PENDING: '#f59e0b',
-  REVIEWED: '#3b82f6',
+  SUGGESTED: '#64748b',
   SHORTLISTED: '#8b5cf6',
+  CONTACTED: '#3b82f6',
+  SCREENING: '#f59e0b',
+  SUBMITTED: '#06b6d4',
+  INTERVIEW: '#22c55e',
+  OFFER: '#10b981',
+  PLACED: '#059669',
   REJECTED: '#ef4444',
-  HIRED: '#22c55e',
+  WITHDRAWN: '#475569',
 }
 
 function ScoreBar({ score }: { score: number }) {
@@ -30,18 +36,10 @@ function ScoreBar({ score }: { score: number }) {
   const color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-      <div style={{
-        flex: 1,
-        height: '6px',
-        background: 'rgba(255,255,255,0.08)',
-        borderRadius: '999px',
-        overflow: 'hidden',
-      }}>
+      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '999px' }} />
       </div>
-      <span style={{ color, fontSize: '0.8rem', fontWeight: 700, minWidth: '2.5rem', textAlign: 'right' }}>
-        {pct}%
-      </span>
+      <span style={{ color, fontSize: '0.8rem', fontWeight: 700, minWidth: '2.5rem', textAlign: 'right' }}>{pct}%</span>
     </div>
   )
 }
@@ -71,18 +69,23 @@ export default async function MatchesPage() {
             const candidateName = candidate ? `${candidate.first_name} ${candidate.last_name}` : null
 
             return (
-              <div key={m.id} style={{
+              <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
-              }}>
+                cursor: 'pointer',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
                     <div style={{ fontWeight: 700 }}>{candidateName}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{candidate?.current_title}</div>
                   </div>
-                  <div style={{ fontSize: '1.25rem' }}>→</div>
+                  <div style={{ fontSize: '1.25rem', color: '#475569' }}>→</div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 700 }}>{job?.title}</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{job?.company?.name}</div>
@@ -118,6 +121,7 @@ export default async function MatchesPage() {
                   )}
                 </div>
               </div>
+              </Link>
             )
           })}
         </div>

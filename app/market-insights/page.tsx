@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
 import { prisma } from '@/lib/prisma'
@@ -48,12 +49,18 @@ export default async function MarketInsightsPage() {
             const insightType = ins.insight_type
 
             return (
-              <div key={ins.id} style={{
+              <Link key={ins.id} href={`/market-insights/${ins.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
-              }}>
+                cursor: 'pointer',
+                height: '100%',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', gap: '0.5rem' }}>
                   <div style={{ fontWeight: 700, flex: 1 }}>{ins.title}</div>
                   <span style={{
@@ -74,27 +81,14 @@ export default async function MarketInsightsPage() {
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   {ins.industry && (
-                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      🏭 {ins.industry}
-                    </span>
+                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>🏭 {ins.industry}</span>
                   )}
                   {ins.region && (
-                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      📍 {ins.region}
-                    </span>
+                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>📍 {ins.region}</span>
                   )}
-                  {ins.seniority_level && (
-                    <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      👤 {ins.seniority_level.replace(/_/g, ' ')}
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ color: '#475569', fontSize: '0.72rem', marginTop: '0.75rem' }}>
-                  Valid from {ins.valid_from ? new Date(ins.valid_from).toLocaleDateString() : '—'}
-                  {ins.valid_until && ` · until ${new Date(ins.valid_until).toLocaleDateString()}`}
                 </div>
               </div>
+              </Link>
             )
           })}
         </div>

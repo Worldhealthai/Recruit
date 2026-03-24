@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
 import { prisma } from '@/lib/prisma'
@@ -20,11 +21,11 @@ const workModeColors: Record<string, string> = {
   ON_SITE: '#f59e0b',
 }
 
-const statusColors: Record<string, string> = {
-  OPEN: '#22c55e',
-  CLOSED: '#ef4444',
-  ON_HOLD: '#f59e0b',
-  DRAFT: '#64748b',
+const urgencyColors: Record<string, string> = {
+  IMMEDIATE: '#ef4444',
+  HIGH: '#f59e0b',
+  NORMAL: '#64748b',
+  LOW: '#475569',
 }
 
 export default async function JobsPage() {
@@ -49,10 +50,11 @@ export default async function JobsPage() {
             const company = job.company
             const skills = job.skills ?? []
             const workMode = job.work_mode
-            const status = job.status
+            const urgency = job.urgency
 
             return (
-              <div key={job.id} style={{
+              <Link key={job.id} href={`/jobs/${job.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -60,15 +62,19 @@ export default async function JobsPage() {
                 display: 'flex',
                 gap: '1.5rem',
                 alignItems: 'flex-start',
-              }}>
+                cursor: 'pointer',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+              >
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: 700, fontSize: '1rem' }}>{job.title}</span>
-                    <span style={{
-                      color: statusColors[status] ?? '#64748b',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                    }}>● {status}</span>
+                    {urgency !== 'NORMAL' && (
+                      <span style={{ color: urgencyColors[urgency] ?? '#64748b', fontSize: '0.7rem', fontWeight: 700 }}>
+                        ● {urgency}
+                      </span>
+                    )}
                   </div>
                   {company && (
                     <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
@@ -109,7 +115,7 @@ export default async function JobsPage() {
                   </span>
                   {(job.salary_min && job.salary_max) && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      £{job.salary_min.toLocaleString()} – £{job.salary_max.toLocaleString()}
+                      £{Number(job.salary_min).toLocaleString()} – £{Number(job.salary_max).toLocaleString()}
                     </span>
                   )}
                   {job.location_country && (
@@ -119,6 +125,7 @@ export default async function JobsPage() {
                   )}
                 </div>
               </div>
+              </Link>
             )
           })}
         </div>

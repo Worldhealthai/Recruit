@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
 import { prisma } from '@/lib/prisma'
@@ -49,12 +50,17 @@ export default async function CompaniesPage() {
             const size = c.company_size
 
             return (
-              <div key={c.id} style={{
+              <Link key={c.id} href={`/companies/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
-              }}>
+                cursor: 'pointer',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+              >
                 <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.2rem' }}>{c.name}</div>
                 <div style={{ color: '#94a3b8', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
                   {c.industry}
@@ -94,6 +100,7 @@ export default async function CompaniesPage() {
                   </div>
                 )}
               </div>
+              </Link>
             )
           })}
         </div>
