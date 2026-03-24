@@ -1,15 +1,19 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getMatches() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/matches?limit=20`, {
-      cache: 'no-store',
+    return await prisma.match.findMany({
+      include: {
+        candidate: true,
+        job: { include: { company: true } },
+      },
+      take: 20,
+      orderBy: { overall_score: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -43,8 +47,7 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export default async function MatchesPage() {
-  const result = await getMatches()
-  const matches: Record<string, unknown>[] = result?.data ?? []
+  const matches = await getMatches()
 
   return (
     <PageShell
@@ -62,13 +65,13 @@ export default async function MatchesPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {matches.map((m) => {
-            const candidate = m.candidate as { first_name: string; last_name: string; current_title: string } | null
-            const job = m.job as { title: string; company?: { name: string } } | null
-            const status = m.status as string
+            const candidate = m.candidate
+            const job = m.job
+            const status = m.status
             const candidateName = candidate ? `${candidate.first_name} ${candidate.last_name}` : null
 
             return (
-              <div key={m.id as string} style={{
+              <div key={m.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -99,18 +102,18 @@ export default async function MatchesPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Overall</span>
-                    <ScoreBar score={m.overall_score as number} />
+                    <ScoreBar score={m.overall_score} />
                   </div>
                   {m.skill_match_score != null && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Skills</span>
-                      <ScoreBar score={m.skill_match_score as number} />
+                      <ScoreBar score={m.skill_match_score} />
                     </div>
                   )}
                   {m.experience_match_score != null && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span style={{ color: '#64748b', fontSize: '0.78rem', width: '90px' }}>Experience</span>
-                      <ScoreBar score={m.experience_match_score as number} />
+                      <ScoreBar score={m.experience_match_score} />
                     </div>
                   )}
                 </div>

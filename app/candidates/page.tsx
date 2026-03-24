@@ -1,15 +1,16 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getCandidates() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/candidates?limit=20`, {
-      cache: 'no-store',
+    return await prisma.candidate.findMany({
+      include: { skills: { include: { skill: true } }, current_company: true },
+      take: 20,
+      orderBy: { created_at: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -29,8 +30,7 @@ const availabilityColor: Record<string, string> = {
 }
 
 export default async function CandidatesPage() {
-  const result = await getCandidates()
-  const candidates: Record<string, unknown>[] = result?.data ?? []
+  const candidates = await getCandidates()
 
   return (
     <PageShell
@@ -52,13 +52,13 @@ export default async function CandidatesPage() {
           gap: '1rem',
         }}>
           {candidates.map((c) => {
-            const seniority = c.seniority_level as string
-            const availability = c.availability_status as string
-            const skills = (c.skills as Array<{ skill: { name: string } }>) ?? []
-            const company = c.current_company as { name: string } | null
+            const seniority = c.seniority_level
+            const availability = c.availability_status
+            const skills = c.skills ?? []
+            const company = c.current_company
 
             return (
-              <div key={c.id as string} style={{
+              <div key={c.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -66,8 +66,8 @@ export default async function CandidatesPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{`${c.first_name as string} ${c.last_name as string}`}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{c.current_title as string}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{`${c.first_name} ${c.last_name}`}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{c.current_title}</div>
                   </div>
                   <span style={{
                     background: `${seniorityColor[seniority] ?? '#64748b'}22`,
@@ -109,7 +109,7 @@ export default async function CandidatesPage() {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                    📍 {c.location_city as string}, {c.location_country as string}
+                    📍 {c.location_city}, {c.location_country}
                   </span>
                   <span style={{
                     color: availabilityColor[availability] ?? '#64748b',

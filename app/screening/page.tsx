@@ -1,15 +1,19 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getScreening() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/screening?limit=20`, {
-      cache: 'no-store',
+    return await prisma.screeningCall.findMany({
+      include: {
+        candidate: true,
+        job: true,
+      },
+      take: 20,
+      orderBy: { scheduled_at: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -29,8 +33,7 @@ const statusColors: Record<string, string> = {
 }
 
 export default async function ScreeningPage() {
-  const result = await getScreening()
-  const calls: Record<string, unknown>[] = result?.data ?? []
+  const calls = await getScreening()
 
   return (
     <PageShell
@@ -48,14 +51,14 @@ export default async function ScreeningPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {calls.map((call) => {
-            const candidate = call.candidate as { first_name: string; last_name: string } | null
-            const job = call.job as { title: string } | null
-            const outcome = call.recommendation as string | null
-            const status = call.status as string
+            const candidate = call.candidate
+            const job = call.job
+            const outcome = call.recommendation
+            const status = call.status
             const candidateName = candidate ? `${candidate.first_name} ${candidate.last_name}` : null
 
             return (
-              <div key={call.id as string} style={{
+              <div key={call.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -94,7 +97,7 @@ export default async function ScreeningPage() {
                   </div>
                 </div>
 
-                {(call.ai_summary as string | null) && (
+                {call.ai_summary && (
                   <p style={{
                     color: '#94a3b8',
                     fontSize: '0.85rem',
@@ -103,14 +106,14 @@ export default async function ScreeningPage() {
                     borderLeft: '3px solid rgba(99,102,241,0.4)',
                     paddingLeft: '0.75rem',
                   }}>
-                    {call.ai_summary as string}
+                    {call.ai_summary}
                   </p>
                 )}
 
-                {(call.scheduled_at as string | null) && (
+                {call.scheduled_at && (
                   <div style={{ color: '#475569', fontSize: '0.78rem' }}>
-                    🕐 {new Date(call.scheduled_at as string).toLocaleString()}
-                    {(call.duration_seconds as number | null) && ` · ${Math.round((call.duration_seconds as number) / 60)} min`}
+                    🕐 {new Date(call.scheduled_at).toLocaleString()}
+                    {call.duration_seconds && ` · ${Math.round(call.duration_seconds / 60)} min`}
                   </div>
                 )}
               </div>

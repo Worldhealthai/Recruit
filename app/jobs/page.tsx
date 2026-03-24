@@ -1,15 +1,16 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getJobs() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/jobs?limit=20`, {
-      cache: 'no-store',
+    return await prisma.job.findMany({
+      include: { company: true, skills: { include: { skill: true } } },
+      take: 20,
+      orderBy: { posted_date: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -27,8 +28,7 @@ const statusColors: Record<string, string> = {
 }
 
 export default async function JobsPage() {
-  const result = await getJobs()
-  const jobs: Record<string, unknown>[] = result?.data ?? []
+  const jobs = await getJobs()
 
   return (
     <PageShell
@@ -46,13 +46,13 @@ export default async function JobsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {jobs.map((job) => {
-            const company = job.company as { name: string; industry: string } | null
-            const skills = (job.skills as Array<{ skill: { name: string } }>) ?? []
-            const workMode = job.work_mode as string
-            const status = job.status as string
+            const company = job.company
+            const skills = job.skills ?? []
+            const workMode = job.work_mode
+            const status = job.status
 
             return (
-              <div key={job.id as string} style={{
+              <div key={job.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -63,7 +63,7 @@ export default async function JobsPage() {
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>{job.title as string}</span>
+                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>{job.title}</span>
                     <span style={{
                       color: statusColors[status] ?? '#64748b',
                       fontSize: '0.72rem',
@@ -107,14 +107,14 @@ export default async function JobsPage() {
                   }}>
                     {workMode?.replace(/_/g, ' ')}
                   </span>
-                  {((job.salary_min as number | null) && (job.salary_max as number | null)) && (
+                  {(job.salary_min && job.salary_max) && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      ${(job.salary_min as number).toLocaleString()} – ${(job.salary_max as number).toLocaleString()}
+                      £{job.salary_min.toLocaleString()} – £{job.salary_max.toLocaleString()}
                     </span>
                   )}
-                  {(job.location_country as string | null) && (
+                  {job.location_country && (
                     <span style={{ color: '#475569', fontSize: '0.75rem' }}>
-                      📍 {job.location_city as string}, {job.location_country as string}
+                      📍 {job.location_city}, {job.location_country}
                     </span>
                   )}
                 </div>

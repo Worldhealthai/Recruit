@@ -1,15 +1,15 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getRecruiters() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/recruiters?limit=20`, {
-      cache: 'no-store',
+    return await prisma.recruiter.findMany({
+      take: 20,
+      orderBy: { created_at: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -21,8 +21,7 @@ const planColors: Record<string, string> = {
 }
 
 export default async function RecruitersPage() {
-  const result = await getRecruiters()
-  const recruiters: Record<string, unknown>[] = result?.data ?? []
+  const recruiters = await getRecruiters()
 
   return (
     <PageShell
@@ -44,11 +43,11 @@ export default async function RecruitersPage() {
           gap: '1rem',
         }}>
           {recruiters.map((r) => {
-            const tier = r.subscription_tier as string
-            const status = r.subscription_status as string
+            const tier = r.subscription_tier
+            const status = r.subscription_status
 
             return (
-              <div key={r.id as string} style={{
+              <div key={r.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -56,8 +55,8 @@ export default async function RecruitersPage() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>
-                    <div style={{ fontWeight: 700 }}>{`${r.first_name as string} ${r.last_name as string}`}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{r.email as string}</div>
+                    <div style={{ fontWeight: 700 }}>{`${r.first_name} ${r.last_name}`}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.82rem' }}>{r.email}</div>
                   </div>
                   <span style={{
                     background: `${planColors[tier] ?? '#64748b'}22`,
@@ -72,9 +71,9 @@ export default async function RecruitersPage() {
                   </span>
                 </div>
 
-                {(r.company_name as string | null) && (
+                {r.company_name && (
                   <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-                    🏢 {r.company_name as string}
+                    🏢 {r.company_name}
                   </div>
                 )}
 
@@ -82,13 +81,13 @@ export default async function RecruitersPage() {
                   {r.max_searches_per_month != null && (
                     <div style={{ fontSize: '0.78rem' }}>
                       <div style={{ color: '#475569' }}>Search quota</div>
-                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.max_searches_per_month as number).toLocaleString()}/mo</div>
+                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{r.max_searches_per_month.toLocaleString()}/mo</div>
                     </div>
                   )}
                   {r.max_screening_calls_per_month != null && (
                     <div style={{ fontSize: '0.78rem' }}>
                       <div style={{ color: '#475569' }}>Screening quota</div>
-                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{(r.max_screening_calls_per_month as number).toLocaleString()}/mo</div>
+                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{r.max_screening_calls_per_month.toLocaleString()}/mo</div>
                     </div>
                   )}
                 </div>

@@ -1,15 +1,15 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getInsights() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/market-insights?limit=20`, {
-      cache: 'no-store',
+    return await prisma.marketInsight.findMany({
+      take: 20,
+      orderBy: { valid_from: 'desc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -23,8 +23,7 @@ const insightTypeColors: Record<string, string> = {
 }
 
 export default async function MarketInsightsPage() {
-  const result = await getInsights()
-  const insights: Record<string, unknown>[] = result?.data ?? []
+  const insights = await getInsights()
 
   return (
     <PageShell
@@ -46,17 +45,17 @@ export default async function MarketInsightsPage() {
           gap: '1rem',
         }}>
           {insights.map((ins) => {
-            const insightType = ins.insight_type as string
+            const insightType = ins.insight_type
 
             return (
-              <div key={ins.id as string} style={{
+              <div key={ins.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', gap: '0.5rem' }}>
-                  <div style={{ fontWeight: 700, flex: 1 }}>{ins.title as string}</div>
+                  <div style={{ fontWeight: 700, flex: 1 }}>{ins.title}</div>
                   <span style={{
                     color: insightTypeColors[insightType] ?? '#64748b',
                     fontSize: '0.7rem',
@@ -67,33 +66,33 @@ export default async function MarketInsightsPage() {
                   </span>
                 </div>
 
-                {(ins.description as string | null) && (
+                {ins.description && (
                   <p style={{ color: '#94a3b8', fontSize: '0.82rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
-                    {ins.description as string}
+                    {ins.description}
                   </p>
                 )}
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  {(ins.industry as string | null) && (
+                  {ins.industry && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      🏭 {ins.industry as string}
+                      🏭 {ins.industry}
                     </span>
                   )}
-                  {(ins.region as string | null) && (
+                  {ins.region && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      📍 {ins.region as string}
+                      📍 {ins.region}
                     </span>
                   )}
-                  {(ins.seniority_level as string | null) && (
+                  {ins.seniority_level && (
                     <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                      👤 {(ins.seniority_level as string).replace(/_/g, ' ')}
+                      👤 {ins.seniority_level.replace(/_/g, ' ')}
                     </span>
                   )}
                 </div>
 
                 <div style={{ color: '#475569', fontSize: '0.72rem', marginTop: '0.75rem' }}>
-                  Valid from {new Date(ins.valid_from as string).toLocaleDateString()}
-                  {(ins.valid_until as string | null) && ` · until ${new Date(ins.valid_until as string).toLocaleDateString()}`}
+                  Valid from {ins.valid_from ? new Date(ins.valid_from).toLocaleDateString() : '—'}
+                  {ins.valid_until && ` · until ${new Date(ins.valid_until).toLocaleDateString()}`}
                 </div>
               </div>
             )

@@ -1,15 +1,16 @@
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
+import { prisma } from '@/lib/prisma'
 
 async function getCompanies() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/companies?limit=20`, {
-      cache: 'no-store',
+    return await prisma.company.findMany({
+      include: { _count: { select: { jobs: true, candidates: true } } },
+      take: 20,
+      orderBy: { name: 'asc' },
     })
-    if (!res.ok) return null
-    return res.json()
   } catch {
-    return null
+    return []
   }
 }
 
@@ -22,8 +23,7 @@ const sizeLabels: Record<string, string> = {
 }
 
 export default async function CompaniesPage() {
-  const result = await getCompanies()
-  const companies: Record<string, unknown>[] = result?.data ?? []
+  const companies = await getCompanies()
 
   return (
     <PageShell
@@ -45,28 +45,28 @@ export default async function CompaniesPage() {
           gap: '1rem',
         }}>
           {companies.map((c) => {
-            const counts = c._count as { jobs: number; candidates: number } | null
-            const size = c.company_size as string
+            const counts = c._count
+            const size = c.company_size
 
             return (
-              <div key={c.id as string} style={{
+              <div key={c.id} style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
               }}>
-                <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.2rem' }}>{c.name as string}</div>
+                <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.2rem' }}>{c.name}</div>
                 <div style={{ color: '#94a3b8', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
-                  {c.industry as string}
+                  {c.industry}
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
                   <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
                     👥 {sizeLabels[size] ?? size} employees
                   </span>
-                  {(c.headquarters_country as string | null) && (
+                  {c.headquarters_country && (
                     <span style={{ color: '#64748b', fontSize: '0.8rem' }}>
-                      📍 {c.headquarters_country as string}
+                      📍 {c.headquarters_country}
                     </span>
                   )}
                 </div>
