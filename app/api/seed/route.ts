@@ -216,6 +216,263 @@ async function seedHandler(req: NextRequest) {
       ],
     })
 
+    // ─── Screening Calls ─────────────────────────────────────────────────────
+    // Get matches to attach screening calls to
+    const allMatches = await prisma.match.findMany({
+      include: { candidate: true, job: true },
+    })
+
+    // Screening call + questions for Alex Chen (match[0]: SHORTLISTED → will be PLACED)
+    const alexMatch = allMatches.find(m => m.candidate.email === 'alex.chen@example.com')
+    const sofiaMatch = allMatches.find(m => m.candidate.email === 'sofia.martinez@example.com')
+
+    if (alexMatch) {
+      const call = await prisma.screeningCall.upsert({
+        where: { id: alexMatch.id + '-call' },
+        update: { status: 'COMPLETED', recommendation: 'STRONG_YES', candidate_interest_level: 'VERY_INTERESTED' },
+        create: {
+          id: alexMatch.id + '-call',
+          match_id: alexMatch.id,
+          candidate_id: alexMatch.candidate_id,
+          job_id: alexMatch.job_id,
+          call_type: 'VIDEO',
+          status: 'COMPLETED',
+          scheduled_at: new Date('2026-03-01T10:00:00Z'),
+          started_at: new Date('2026-03-01T10:02:00Z'),
+          ended_at: new Date('2026-03-01T10:34:00Z'),
+          duration_seconds: 1920,
+          candidate_interest_level: 'VERY_INTERESTED',
+          availability_confirmed: true,
+          salary_expectation_confirmed: 112000,
+          notice_period_confirmed: 30,
+          key_concerns: ['Wants Staff-level title within 18 months', 'Prefers hybrid 2–3 days office'],
+          recommendation: 'STRONG_YES',
+          recommendation_reasoning: 'Alex is an exceptional fit. His TypeScript depth is genuinely expert-level — he gave detailed answers on event loop internals, database indexing strategy, and microservice observability patterns. He is very interested in the role and confirmed availability in 30 days. Salary expectations (£112K) are within budget. No red flags. Recommend fast-tracking to technical interview immediately.',
+          ai_summary: 'Completed 32-minute video screening. Candidate demonstrated expert TypeScript and Node.js knowledge, validated 6 years of fintech experience, and confirmed strong interest in the Monzo role. Salary aligned. Notice period 30 days. Strongly recommend to advance.',
+          transcript: `AI Recruiter: Hi Alex, thanks for joining — I\'m the RecruitAI screening assistant. This call will take about 30 minutes. Is that okay?
+Alex Chen: Absolutely, happy to chat.
+
+AI Recruiter: Great. Can you walk me through your current role and what you own day-to-day at Monzo?
+Alex Chen: Sure. I\'m a Senior SWE on the Core Banking team. Day-to-day I own the transaction feed service — it\'s TypeScript and Node.js, Postgres backend, sitting behind an API that serves about 8 million users. I led a full rewrite last year that took our P99 latency from 340ms down to 200ms. I also run code reviews for the two mid-level engineers on my team and contribute to architecture RFCs.
+
+AI Recruiter: What draws you to this particular opportunity at Revolut — sorry, at Monzo\'s TypeScript Engineer opening?
+Alex Chen: Actually I\'m already at Monzo, so this would be a move. I\'m looking at the Revolut Staff role and this Monzo opening. Honestly, the Monzo role is compelling because of the ownership scope — the JD mentions full ownership of the account infrastructure, not just a component. That\'s what I want next.
+
+AI Recruiter: Understood. Tell me about a technically challenging problem you\'ve solved recently.
+Alex Chen: The latency project I mentioned. The bottleneck turned out to be N+1 queries in the enrichment layer — we were hitting the database once per transaction to fetch merchant metadata. I redesigned the query to batch-fetch and cache with a 60-second TTL in Redis. The change reduced database load by 70% and dropped that P99 by 40%. The tricky part was doing it safely behind a feature flag across a live system.
+
+AI Recruiter: What are your salary expectations?
+Alex Chen: I\'m currently on £95K. I\'d be looking at £110–115K for the right role, with clear progression to Staff level within 18 months.
+
+AI Recruiter: And your notice period?
+Alex Chen: Contractually 30 days but I\'d expect to leave on good terms so realistically 4 weeks.
+
+AI Recruiter: Any concerns about the role or reasons you might turn down an offer?
+Alex Chen: Mainly around title. If the offer comes in as Senior with no clear Staff pathway, that\'s a dealbreaker. And I want hybrid — at least 2 days remote — which the JD suggests is fine.`,
+        },
+      })
+
+      await Promise.all([
+        prisma.screeningQuestion.upsert({
+          where: { id: alexMatch.id + '-q1' },
+          update: {},
+          create: {
+            id: alexMatch.id + '-q1',
+            screening_call_id: call.id,
+            question_text: 'Walk me through your current role and primary ownership areas.',
+            answer_text: 'Owns the transaction feed service (TypeScript/Node.js/Postgres) at Monzo serving 8M users. Led rewrite that reduced P99 latency 40%. Runs code reviews and contributes to architecture RFCs.',
+            ai_score: 0.95,
+            order: 1,
+          },
+        }),
+        prisma.screeningQuestion.upsert({
+          where: { id: alexMatch.id + '-q2' },
+          update: {},
+          create: {
+            id: alexMatch.id + '-q2',
+            screening_call_id: call.id,
+            question_text: 'Describe a technically complex problem you solved end-to-end.',
+            answer_text: 'N+1 query problem in enrichment layer. Batched merchant metadata fetches with Redis TTL cache, reduced DB load 70%, P99 latency down 40%. Shipped safely behind feature flag.',
+            ai_score: 0.98,
+            order: 2,
+          },
+        }),
+        prisma.screeningQuestion.upsert({
+          where: { id: alexMatch.id + '-q3' },
+          update: {},
+          create: {
+            id: alexMatch.id + '-q3',
+            screening_call_id: call.id,
+            question_text: 'What are your salary expectations and notice period?',
+            answer_text: 'Expects £110–115K. Currently on £95K. Notice period 30 days contractually, ~4 weeks realistic.',
+            ai_score: 0.90,
+            order: 3,
+          },
+        }),
+        prisma.screeningQuestion.upsert({
+          where: { id: alexMatch.id + '-q4' },
+          update: {},
+          create: {
+            id: alexMatch.id + '-q4',
+            screening_call_id: call.id,
+            question_text: 'What would cause you to decline an offer?',
+            answer_text: 'No clear Staff progression path (dealbreaker). Also requires hybrid working (min 2 days remote).',
+            ai_score: 0.85,
+            order: 4,
+          },
+        }),
+      ])
+
+      // Upgrade Alex's match to PLACED for the placement record
+      await prisma.match.update({
+        where: { id: alexMatch.id },
+        data: { status: 'PLACED' },
+      })
+    }
+
+    // Screening call for Sofia Martinez (CONTACTED)
+    if (sofiaMatch) {
+      const sofiaCall = await prisma.screeningCall.upsert({
+        where: { id: sofiaMatch.id + '-call' },
+        update: { status: 'COMPLETED', recommendation: 'YES' },
+        create: {
+          id: sofiaMatch.id + '-call',
+          match_id: sofiaMatch.id,
+          candidate_id: sofiaMatch.candidate_id,
+          job_id: sofiaMatch.job_id,
+          call_type: 'VIDEO',
+          status: 'COMPLETED',
+          scheduled_at: new Date('2026-03-10T14:00:00Z'),
+          started_at: new Date('2026-03-10T14:01:00Z'),
+          ended_at: new Date('2026-03-10T14:28:00Z'),
+          duration_seconds: 1620,
+          candidate_interest_level: 'INTERESTED',
+          availability_confirmed: true,
+          salary_expectation_confirmed: 118000,
+          notice_period_confirmed: 30,
+          key_concerns: ['Primarily B2B SaaS background — limited consumer product experience', 'Wants salary at top of range (£118K)'],
+          recommendation: 'YES',
+          recommendation_reasoning: 'Sofia is a credible Senior PM candidate. Her analytical rigour and data-first approach are exactly what Deliveroo needs. The B2C experience gap is real but she had strong answers around consumer growth mechanics. Salary expectation (£118K) is at the top of range — confirm budget flexibility before advancing.',
+          ai_summary: 'Strong PM candidate with deep analytics skills and proven ARR ownership. B2C experience lighter than ideal but addressed well. Salary top of range. Recommend advancing to hiring manager intro call.',
+        },
+      })
+
+      await Promise.all([
+        prisma.screeningQuestion.upsert({
+          where: { id: sofiaMatch.id + '-q1' },
+          update: {},
+          create: {
+            id: sofiaMatch.id + '-q1',
+            screening_call_id: sofiaCall.id,
+            question_text: 'What is the most impactful product you\'ve shipped and how did you measure success?',
+            answer_text: 'Business Accounts at Wise — grew to £180M ARR. Measured by activation rate, revenue per account, and monthly active accounts. Ran 3 major feature bets including bulk payments and multi-user access.',
+            ai_score: 0.92,
+            order: 1,
+          },
+        }),
+        prisma.screeningQuestion.upsert({
+          where: { id: sofiaMatch.id + '-q2' },
+          update: {},
+          create: {
+            id: sofiaMatch.id + '-q2',
+            screening_call_id: sofiaCall.id,
+            question_text: 'How do you approach a consumer experience with millions of users differently from a B2B product?',
+            answer_text: 'Key difference is breadth of user personas and emotional stakes. In consumer, you\'re designing for someone ordering food when hungry — micro-moments matter more. I\'d lean more on session recordings, NPS segmentation, and cohort retention rather than pure revenue metrics.',
+            ai_score: 0.82,
+            order: 2,
+          },
+        }),
+      ])
+    }
+
+    // ─── Placements ──────────────────────────────────────────────────────────
+    const recruiter = await prisma.recruiter.findUnique({ where: { email: 'admin@recruitai.com' } })
+    const placedMatch = allMatches.find(m => m.candidate.email === 'alex.chen@example.com')
+
+    if (recruiter && placedMatch) {
+      const agreedSalary = 112000
+      const feePercentage = 0.20          // 20% — standard UK fintech perm fee
+      const feeTotal = agreedSalary * feePercentage  // £22,400
+      const platformFeePct = 0.10         // platform takes 10% of gross fee
+      const recruiterEarnings = feeTotal * (1 - platformFeePct)  // £20,160
+
+      const startDate = new Date('2026-04-14')
+      const guaranteeExpires = new Date(startDate)
+      guaranteeExpires.setDate(guaranteeExpires.getDate() + 90)
+
+      await prisma.placement.upsert({
+        where: { match_id: placedMatch.id },
+        update: { invoice_status: 'PAID', status: 'ACTIVE' },
+        create: {
+          match_id: placedMatch.id,
+          candidate_id: placedMatch.candidate_id,
+          job_id: placedMatch.job_id,
+          recruiter_id: recruiter.id,
+          start_date: startDate,
+          agreed_salary: agreedSalary,
+          salary_currency: 'GBP',
+          fee_type: 'CONTINGENCY',
+          fee_percentage: feePercentage,
+          fee_total: feeTotal,
+          platform_fee_pct: platformFeePct,
+          recruiter_earnings: recruiterEarnings,
+          invoice_status: 'PAID',
+          invoice_number: 'INV-2026-0041',
+          invoice_date: new Date('2026-04-14'),
+          payment_due_date: new Date('2026-05-14'),
+          payment_date: new Date('2026-05-06'),
+          guarantee_days: 90,
+          guarantee_expires: guaranteeExpires,
+          status: 'ACTIVE',
+          notes: 'Smooth placement. Client (Monzo) was very happy with the quality of the shortlist. Alex accepted offer on first round — no counter-offer negotiation required. Invoice paid 8 days early.',
+        },
+      })
+    }
+
+    // Second historical placement — Sofia at Deliveroo (for portfolio richness)
+    if (recruiter && sofiaMatch) {
+      const sofiaAgreedSalary = 118000
+      const sofiaFee = sofiaAgreedSalary * 0.18   // 18% fee
+      const sofiaRecruiterEarnings = sofiaFee * 0.90
+
+      const sofiaStart = new Date('2026-05-05')
+      const sofiaGuaranteeExpires = new Date(sofiaStart)
+      sofiaGuaranteeExpires.setDate(sofiaGuaranteeExpires.getDate() + 90)
+
+      await prisma.placement.upsert({
+        where: { match_id: sofiaMatch.id },
+        update: { invoice_status: 'INVOICED' },
+        create: {
+          match_id: sofiaMatch.id,
+          candidate_id: sofiaMatch.candidate_id,
+          job_id: sofiaMatch.job_id,
+          recruiter_id: recruiter.id,
+          start_date: sofiaStart,
+          agreed_salary: sofiaAgreedSalary,
+          salary_currency: 'GBP',
+          fee_type: 'CONTINGENCY',
+          fee_percentage: 0.18,
+          fee_total: sofiaFee,
+          platform_fee_pct: 0.10,
+          recruiter_earnings: sofiaRecruiterEarnings,
+          invoice_status: 'INVOICED',
+          invoice_number: 'INV-2026-0048',
+          invoice_date: new Date('2026-05-05'),
+          payment_due_date: new Date('2026-06-04'),
+          guarantee_days: 90,
+          guarantee_expires: sofiaGuaranteeExpires,
+          status: 'ACTIVE',
+          notes: 'Placed after 2-interview process. Deliveroo stretched to top of range (£118K). Invoice raised on start date, payment due in 30 days.',
+        },
+      })
+
+      // Update Sofia's match to PLACED
+      await prisma.match.update({
+        where: { id: sofiaMatch.id },
+        data: { status: 'PLACED' },
+      })
+    }
+
     return NextResponse.json({
       ok: true,
       counts: {

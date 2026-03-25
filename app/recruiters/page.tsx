@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'
 import { prisma } from '@/lib/prisma'
@@ -47,11 +48,13 @@ export default async function RecruitersPage() {
             const status = r.subscription_status
 
             return (
-              <div key={r.id} style={{
+              <Link key={r.id} href={`/recruiters/${r.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="hover-card" style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
+                cursor: 'pointer',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>
@@ -100,6 +103,7 @@ export default async function RecruitersPage() {
                   </div>
                 )}
               </div>
+              </Link>
             )
           })}
         </div>

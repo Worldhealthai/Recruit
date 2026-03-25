@@ -6,6 +6,7 @@ const links = [
   { href: '/companies',      label: 'Companies' },
   { href: '/matches',        label: 'Matches' },
   { href: '/screening',      label: 'Screening' },
+  { href: '/placements',     label: 'Placements' },
   { href: '/market-insights',label: 'Market Insights' },
   { href: '/recruiters',     label: 'Recruiters' },
 ]

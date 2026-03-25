@@ -166,6 +166,33 @@ enum InsightType {
   INDUSTRY_SHIFT
 }
 
+// ─── PLACEMENT ENUMS ─────────────────────────────────────────────────────────
+
+enum FeeType {
+  CONTINGENCY      // % of candidate first-year salary (most common perm)
+  RETAINED         // Upfront + shortlist + placement split
+  CONTRACT_MARGIN  // Daily/hourly rate margin
+  FLAT_FEE         // Fixed fee regardless of salary
+}
+
+enum PlacementStatus {
+  ACTIVE            // Candidate still employed in the role
+  COMPLETED         // Fixed-term contract ended naturally
+  EARLY_DEPARTURE   // Left before guarantee period expires (rebate risk)
+  GUARANTEE_CLAIMED // Client invoked rebate clause
+  REPLACED          // Free replacement provided to client
+}
+
+enum InvoiceStatus {
+  PENDING    // Not yet raised
+  INVOICED   // Invoice sent to client
+  PART_PAID  // Partial payment received
+  PAID       // Fully settled
+  OVERDUE    // Past payment terms
+  DISPUTED   // Client querying the invoice
+  WRITTEN_OFF
+}
+
 enum RecruiterRole {
   ADMIN
   RECRUITER
@@ -367,6 +394,7 @@ model Candidate {
   matches                Match[]
   screening_calls        ScreeningCall[]
   org_roles              OrgRole[]
+  placements             Placement[]
 
   @@index([location_country, seniority_level, availability_status])
   @@map("candidates")
@@ -494,6 +522,7 @@ model Job {
   skills           JobSkill[]
   matches          Match[]
   screening_calls  ScreeningCall[]
+  placements       Placement[]
 
   @@index([status, seniority_level, work_mode, location_country])
   @@map("jobs")
@@ -537,6 +566,7 @@ model Match {
   candidate             Candidate   @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
   job                   Job         @relation(fields: [job_id], references: [id], onDelete: Cascade)
   screening_calls       ScreeningCall[]
+  placement             Placement?
 
   @@unique([candidate_id, job_id])
   @@index([overall_score(sort: Desc)])
@@ -655,9 +685,11 @@ model Recruiter {
 
   saved_searches               SavedSearch[]
   activities                   Activity[]
+  placements                   Placement[]
 
   @@map("recruiters")
 }
+
 
 model SavedSearch {
   id              String          @id @default(uuid())
@@ -726,4 +758,64 @@ model DataSourceRecord {
   data_source    DataSource @relation(fields: [data_source_id], references: [id], onDelete: Cascade)
 
   @@map("data_source_records")
+}
+
+// ─────────────────────────────────────────────
+// 11. PLACEMENTS & RECRUITER EARNINGS
+// ─────────────────────────────────────────────
+
+model Placement {
+  id                  String          @id @default(uuid())
+  match_id            String          @unique
+  candidate_id        String
+  job_id              String
+  recruiter_id        String
+
+  // Agreed terms
+  start_date          DateTime
+  agreed_salary       Decimal         @db.Decimal(12, 2)
+  salary_currency     String          @default("GBP")
+
+  // Fee structure
+  fee_type            FeeType         @default(CONTINGENCY)
+  fee_percentage      Float?          // e.g. 0.20 = 20% of first-year salary
+  fee_total           Decimal         @db.Decimal(12, 2)  // gross fee billed to client
+
+  // Recruiter's take (after platform margin)
+  platform_fee_pct    Float           @default(0.10)      // platform takes 10% of gross fee
+  recruiter_earnings  Decimal         @db.Decimal(12, 2)  // fee_total × (1 − platform_fee_pct)
+
+  // Contract-specific (if FeeType = CONTRACT_MARGIN)
+  day_rate_candidate  Decimal?        @db.Decimal(10, 2)  // what candidate is paid per day
+  day_rate_client     Decimal?        @db.Decimal(10, 2)  // what client is billed per day
+  contract_days       Int?                                // total days agreed
+
+  // Invoicing
+  invoice_status      InvoiceStatus   @default(PENDING)
+  invoice_number      String?
+  invoice_date        DateTime?
+  payment_due_date    DateTime?
+  payment_date        DateTime?
+
+  // Guarantee period (rebate if candidate leaves early)
+  guarantee_days      Int             @default(90)
+  guarantee_expires   DateTime?       // start_date + guarantee_days
+
+  // Post-placement
+  status              PlacementStatus @default(ACTIVE)
+  departure_date      DateTime?       // if status = EARLY_DEPARTURE
+  rebate_amount       Decimal?        @db.Decimal(12, 2)  // pro-rata refund owed
+  notes               String?         @db.Text
+
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+
+  match               Match           @relation(fields: [match_id], references: [id])
+  candidate           Candidate       @relation(fields: [candidate_id], references: [id])
+  job                 Job             @relation(fields: [job_id], references: [id])
+  recruiter           Recruiter       @relation(fields: [recruiter_id], references: [id])
+
+  @@index([recruiter_id, status])
+  @@index([invoice_status])
+  @@map("placements")
 }
