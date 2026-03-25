@@ -51,15 +51,13 @@ export default async function CompaniesPage() {
 
             return (
               <Link key={c.id} href={`/companies/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{
+              <div className="hover-card" style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
                 padding: '1.25rem 1.5rem',
                 cursor: 'pointer',
               }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
               >
                 <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.2rem' }}>{c.name}</div>
                 <div style={{ color: '#94a3b8', fontSize: '0.82rem', marginBottom: '0.75rem' }}>

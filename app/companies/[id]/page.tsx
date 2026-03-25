@@ -125,13 +125,11 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {company.jobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{
+                <div className="hover-card" style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem',
                   padding: '0.9rem 1rem', background: 'rgba(255,255,255,0.03)',
                   borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
                 >
                   <div>
                     <div style={{ fontWeight: 600 }}>{job.title}</div>
@@ -178,12 +176,10 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
             {company.candidates.map((c) => (
               <Link key={c.id} href={`/candidates/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{
+                <div className="hover-card" style={{
                   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
                   borderRadius: '0.5rem', padding: '0.6rem 1rem', cursor: 'pointer',
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
                 >
                   <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{c.first_name} {c.last_name}</div>
                   <div style={{ color: '#64748b', fontSize: '0.75rem' }}>{c.current_title}</div>

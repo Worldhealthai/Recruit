@@ -146,9 +146,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '0.75rem', padding: '1.5rem' }}>
               <h2 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700 }}>Company</h2>
               <Link href={`/companies/${job.company.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ cursor: 'pointer' }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                <div className="hover-card" style={{ cursor: 'pointer' }}
                 >
                   <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>{job.company.name}</div>
                   <div style={{ color: '#64748b', fontSize: '0.82rem', marginBottom: '0.5rem' }}>{job.company.industry}</div>
@@ -209,14 +207,12 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {job.matches.map((m, i) => (
               <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{
+                <div className="hover-card" style={{
                   display: 'grid', gridTemplateColumns: 'auto 1fr 200px auto',
                   gap: '1rem', alignItems: 'center',
                   padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)',
                   borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
                 >
                   <span style={{ color: '#475569', fontWeight: 700, fontSize: '0.85rem', minWidth: '1.5rem' }}>#{i + 1}</span>
                   <div>

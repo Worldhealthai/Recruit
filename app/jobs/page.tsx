@@ -54,7 +54,7 @@ export default async function JobsPage() {
 
             return (
               <Link key={job.id} href={`/jobs/${job.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{
+              <div className="hover-card" style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -64,8 +64,6 @@ export default async function JobsPage() {
                 alignItems: 'flex-start',
                 cursor: 'pointer',
               }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
               >
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>

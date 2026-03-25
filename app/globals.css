@@ -40,3 +40,11 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Hover card — used on all list/detail cards */
+.hover-card {
+  transition: border-color 0.15s ease;
+}
+.hover-card:hover {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+}

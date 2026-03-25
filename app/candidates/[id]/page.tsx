@@ -178,7 +178,7 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
             }}>
               <h2 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700 }}>Current Employer</h2>
               <Link href={`/companies/${candidate.current_company.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{
+                <div className="hover-card" style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '0.75rem', background: 'rgba(255,255,255,0.04)', borderRadius: '0.5rem',
                   border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
@@ -219,15 +219,13 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {candidate.matches.map((m) => (
               <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{
+                <div className="hover-card" style={{
                   display: 'grid', gridTemplateColumns: '1fr 200px auto',
                   gap: '1rem', alignItems: 'center',
                   padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)',
                   borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.06)',
                   cursor: 'pointer',
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
                 >
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{m.job.title}</div>

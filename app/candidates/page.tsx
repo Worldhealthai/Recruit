@@ -60,7 +60,7 @@ export default async function CandidatesPage() {
 
             return (
               <Link key={c.id} href={`/candidates/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{
+              <div className="hover-card" style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '0.75rem',
@@ -68,8 +68,6 @@ export default async function CandidatesPage() {
                 cursor: 'pointer',
                 transition: 'border-color 0.15s',
               }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>

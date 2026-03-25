@@ -124,12 +124,10 @@ export default async function MatchDetailPage({ params }: { params: { id: string
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Candidate card */}
         <Link href={`/candidates/${candidate.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div style={{
+          <div className="hover-card" style={{
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: '0.75rem', padding: '1.5rem', cursor: 'pointer', height: '100%',
           }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
           >
             <div style={{ color: '#64748b', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Candidate</div>
             <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.2rem' }}>{candidate.first_name} {candidate.last_name}</div>
@@ -151,12 +149,10 @@ export default async function MatchDetailPage({ params }: { params: { id: string
 
         {/* Job card */}
         <Link href={`/jobs/${job.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div style={{
+          <div className="hover-card" style={{
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: '0.75rem', padding: '1.5rem', cursor: 'pointer', height: '100%',
           }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
           >
             <div style={{ color: '#64748b', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Job</div>
             <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.2rem' }}>{job.title}</div>
