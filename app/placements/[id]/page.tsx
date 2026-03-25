@@ -7,10 +7,7 @@ const invoiceColors: Record<string, string> = {
   PENDING: '#64748b', INVOICED: '#3b82f6', PART_PAID: '#f59e0b',
   PAID: '#22c55e', OVERDUE: '#ef4444', DISPUTED: '#dc2626', WRITTEN_OFF: '#475569',
 }
-const placementStatusColors: Record<string, string> = {
-  ACTIVE: '#22c55e', COMPLETED: '#3b82f6', EARLY_DEPARTURE: '#ef4444',
-  GUARANTEE_CLAIMED: '#dc2626', REPLACED: '#f59e0b',
-}
+
 
 function InfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
