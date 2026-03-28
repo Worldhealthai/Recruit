@@ -348,7 +348,7 @@ function SearchableChecklist({ items, selected, onToggle, placeholder }: {
       )}
       <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
         {filtered.length === 0 ? (
-          <div style={{ color: '#475569', fontSize: '0.78rem', padding: '0.5rem 0' }}>No results for "{q}"</div>
+          <div style={{ color: '#475569', fontSize: '0.78rem', padding: '0.5rem 0' }}>No results for &ldquo;{q}&rdquo;</div>
         ) : (
           filtered.map(item => (
             <CheckPill key={item} label={item}
