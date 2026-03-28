@@ -11,6 +11,7 @@ const links = [
   { href: '/screening',       label: 'Screening' },
   { href: '/placements',      label: 'Placements' },
   { href: '/market-insights', label: 'Market Insights' },
+  { href: '/analytics',      label: 'Analytics' },
 ]
 
 export default function Nav({ active }: { active?: string }) {

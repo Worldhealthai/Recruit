@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const SCREENS = [
   {
@@ -141,17 +141,53 @@ function VisualMockup({ type, accent }: { type: string; accent: string }) {
   )
 }
 
+const NARRATION = [
+  'Welcome to RecruitAI. The matching engine automatically scores every candidate in your talent pool against open roles — surfacing the strongest fits instantly, so you never miss a great hire.',
+  'Once a candidate is identified, mark them as contacted and track every interaction. Your full pipeline is visible in one place, with every stage timestamped.',
+  'The AI conducts a structured phone screen on your behalf. It asks role-specific questions, scores every answer, flags concerns, and delivers a clear recommendation — Strong Yes, Yes, Maybe, or No.',
+  'After screening, shortlist the best candidates with one click. Advance them to interview, then to offer stage — all tracked in your personal pipeline.',
+  'When a placement is confirmed, enter the agreed salary and fee percentage. RecruitAI calculates your gross fee, platform cut, and net earnings instantly — and logs every invoice.',
+]
+
 export default function DemoModal({ onClose }: { onClose: () => void }) {
   const [current, setCurrent] = useState(0)
   const [playing, setPlaying] = useState(true)
+  const [voiceOn, setVoiceOn] = useState(false)
+  const utterRef = useRef<SpeechSynthesisUtterance | null>(null)
 
+  // Auto-advance timer — longer when voice is on so narration can finish
   useEffect(() => {
     if (!playing) return
+    const delay = voiceOn ? 8000 : 4000
     const t = setTimeout(() => {
       setCurrent(c => (c + 1) % SCREENS.length)
-    }, 4000)
+    }, delay)
     return () => clearTimeout(t)
-  }, [current, playing])
+  }, [current, playing, voiceOn])
+
+  // Voice narration via Web Speech API
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    if (!voiceOn) return
+    const u = new SpeechSynthesisUtterance(NARRATION[current])
+    u.rate = 0.92
+    u.pitch = 1.05
+    // Prefer a natural-sounding voice if available
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+                      voices.find(v => v.lang.startsWith('en-GB')) ||
+                      voices.find(v => v.lang.startsWith('en'))
+    if (preferred) u.voice = preferred
+    utterRef.current = u
+    window.speechSynthesis.speak(u)
+    return () => { window.speechSynthesis.cancel() }
+  }, [current, voiceOn])
+
+  // Stop speech when modal closes
+  useEffect(() => {
+    return () => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel() }
+  }, [])
 
   const screen = SCREENS[current]
 
@@ -170,7 +206,13 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
             <span style={{ fontWeight: 700, fontSize: '1rem', color: '#f8fafc' }}>Recruit<span style={{ color: '#6366f1' }}>AI</span> — Product Tour</span>
             <span style={{ marginLeft: '1rem', fontSize: '0.75rem', color: '#475569' }}>{current + 1} of {SCREENS.length}</span>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <button
+              onClick={() => setVoiceOn(v => !v)}
+              title={voiceOn ? 'Mute narration' : 'Enable voice narration'}
+              style={{ background: voiceOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)', border: `1px solid ${voiceOn ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)'}`, color: voiceOn ? '#a5b4fc' : '#64748b', borderRadius: '0.4rem', padding: '0.3rem 0.75rem', fontSize: '0.78rem', cursor: 'pointer' }}>
+              {voiceOn ? 'Voice on' : 'Voice off'}
+            </button>
             <button onClick={() => setPlaying(p => !p)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', borderRadius: '0.4rem', padding: '0.3rem 0.75rem', fontSize: '0.78rem', cursor: 'pointer' }}>
               {playing ? 'Pause' : 'Play'}
             </button>

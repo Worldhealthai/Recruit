@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import PageShell from '../../components/PageShell'
 import CandidateActions from './CandidateActions'
+import CandidateNotes from './CandidateNotes'
 
 const availabilityColor: Record<string, string> = {
   ACTIVELY_LOOKING: '#22c55e',
@@ -145,6 +146,7 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
         </div>
         <CandidateActions
           candidateId={candidate.id}
+          candidateName={`${candidate.first_name} ${candidate.last_name}`}
           fallbackJobId={fallbackJob?.id ?? null}
           initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']}
         />
@@ -181,6 +183,7 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
 
         {/* Current Company */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <CandidateNotes candidateId={candidate.id} />
           {candidate.current_company && (
             <div style={{
               background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',

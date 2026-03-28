@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ScorecardModal from '../../components/ScorecardModal'
+import OfferLetterModal from '../../components/OfferLetterModal'
 
 type ScreeningCall = { id: string; recommendation: string | null; status: string }
 type Placement = { id: string; fee_total: number; recruiter_earnings: number }
@@ -146,9 +148,11 @@ function ScreeningModal({ match, onClose, onDone }: {
 }
 
 // ─── Per-match action buttons ─────────────────────────────────────────────────
-function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: () => void }) {
+function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob; candidateName: string; onRefresh: () => void }) {
   const [loading, setLoading] = useState(false)
   const [showScreening, setShowScreening] = useState(false)
+  const [showScorecard, setShowScorecard] = useState(false)
+  const [showOfferLetter, setShowOfferLetter] = useState(false)
   const { status } = match
   const hasScreen = match.screening_calls.length > 0
 
@@ -211,18 +215,28 @@ function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: ()
           </>
         )}
 
-        {/* ── Step 4: Interviewing → offer ── */}
+        {/* ── Step 4: Interviewing → scorecard + offer ── */}
         {status === 'INTERVIEWING' && (
-          <button onClick={() => advance('OFFERED')} style={{ ...btnBase, background: 'rgba(249,115,22,0.15)', borderColor: 'rgba(249,115,22,0.4)', color: '#fb923c', padding: '0.35rem 1rem' }}>
-            Make Offer
-          </button>
+          <>
+            <button onClick={() => setShowScorecard(true)} style={{ ...btnBase, background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.35)', color: '#fbbf24' }}>
+              Interview Scorecard
+            </button>
+            <button onClick={() => advance('OFFERED')} style={{ ...btnBase, background: 'rgba(249,115,22,0.15)', borderColor: 'rgba(249,115,22,0.4)', color: '#fb923c', padding: '0.35rem 1rem' }}>
+              Make Offer
+            </button>
+          </>
         )}
 
-        {/* ── Step 5: Offered → place (go to pipeline for full placement form) ── */}
+        {/* ── Step 5: Offered → view offer letter + place ── */}
         {status === 'OFFERED' && (
-          <a href="/pipeline" style={{ ...btnBase, background: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.4)', color: '#4ade80', textDecoration: 'none', display: 'inline-block', padding: '0.35rem 1rem' }}>
-            Confirm Placement →
-          </a>
+          <>
+            <button onClick={() => setShowOfferLetter(true)} style={{ ...btnBase, background: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.35)', color: '#fb923c' }}>
+              View Offer Letter
+            </button>
+            <a href="/pipeline" style={{ ...btnBase, background: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.4)', color: '#4ade80', textDecoration: 'none', display: 'inline-block', padding: '0.35rem 1rem' }}>
+              Confirm Placement →
+            </a>
+          </>
         )}
 
         {/* ── Placed: show earnings ── */}
@@ -254,6 +268,27 @@ function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: ()
           onDone={() => { setShowScreening(false); onRefresh() }}
         />
       )}
+
+      {showScorecard && (
+        <ScorecardModal
+          candidateName={candidateName}
+          jobTitle={match.job.title}
+          matchId={match.id}
+          onClose={() => setShowScorecard(false)}
+          onSaved={() => { setShowScorecard(false); onRefresh() }}
+        />
+      )}
+
+      {showOfferLetter && (
+        <OfferLetterModal
+          candidateName={candidateName}
+          jobTitle={match.job.title}
+          companyName={match.job.company?.name ?? ''}
+          salary={0}
+          startDate=""
+          onClose={() => setShowOfferLetter(false)}
+        />
+      )}
     </>
   )
 }
@@ -279,10 +314,12 @@ const STAGE_RANK: Record<string, number> = {
 export default function CandidateActions({
   initialMatches,
   candidateId,
+  candidateName,
   fallbackJobId,
 }: {
   initialMatches: MatchWithJob[]
   candidateId: string
+  candidateName: string
   fallbackJobId: string | null
 }) {
   const router = useRouter()
@@ -405,7 +442,7 @@ export default function CandidateActions({
               <span style={{ fontSize: '0.72rem', color: '#334155' }}>
                 {NEXT_STEP[m.status] ?? ''}
               </span>
-              <MatchActions match={m} onRefresh={refresh} />
+              <MatchActions match={m} candidateName={candidateName} onRefresh={refresh} />
             </div>
           </div>
         )
