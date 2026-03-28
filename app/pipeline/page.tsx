@@ -3,21 +3,43 @@ import Nav from '../components/Nav'
 import { Suspense } from 'react'
 import PipelineTable from './PipelineTable'
 
-async function getData() {
-  const recruiter = await prisma.recruiter.findFirst()
+export const maxDuration = 30
 
-  const matches = await prisma.match.findMany({
-    include: {
-      candidate: { include: { current_company: true, skills: { include: { skill: true }, take: 3 } } },
-      job: { include: { company: true } },
-      placement: true,
-      screening_calls: { orderBy: { created_at: 'desc' }, take: 1 },
-    },
-    orderBy: { overall_score: 'desc' },
-  })
+async function getData() {
+  // Run independent queries in parallel to halve DB round-trips
+  const [recruiter, matches] = await Promise.all([
+    prisma.recruiter.findFirst(),
+    prisma.match.findMany({
+      include: {
+        candidate: {
+          select: {
+            id: true, first_name: true, last_name: true, current_title: true,
+            salary_expectation_min: true, salary_expectation_max: true,
+            current_company: { select: { name: true } },
+            skills: { include: { skill: { select: { name: true } } }, take: 3 },
+          },
+        },
+        job: {
+          select: {
+            id: true, title: true, salary_max: true,
+            company: { select: { name: true, industry: true } },
+          },
+        },
+        placement: {
+          select: { id: true, fee_total: true, recruiter_earnings: true, invoice_status: true },
+        },
+        screening_calls: {
+          select: { id: true, recommendation: true, status: true },
+          orderBy: { created_at: 'desc' }, take: 1,
+        },
+      },
+      orderBy: { overall_score: 'desc' },
+    }),
+  ])
 
   const placements = await prisma.placement.findMany({
     where: recruiter ? { recruiter_id: recruiter.id } : {},
+    select: { fee_total: true, recruiter_earnings: true, invoice_status: true },
   })
 
   const totalBilled      = placements.reduce((s, p) => s + Number(p.fee_total), 0)
