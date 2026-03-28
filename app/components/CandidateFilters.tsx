@@ -23,23 +23,66 @@ const SENIORITY = [
   { value: 'C_SUITE',        label: 'C-Suite / Executive' },
 ]
 
-const SKILLS = [
-  'TypeScript','JavaScript','Python','Java','Go','C#','PHP','Ruby','Swift','Kotlin',
-  'React','Vue','Angular','Node.js','Next.js','Django','Spring Boot','Laravel',
-  'PostgreSQL','MySQL','MongoDB','Redis','Elasticsearch',
-  'AWS','Azure','GCP','Docker','Kubernetes','Terraform',
-  'Machine Learning','Data Analysis','SQL','Power BI','Tableau',
-  'Product Management','Project Management','Agile','Scrum','PRINCE2',
-  'Salesforce','HubSpot','SAP','Dynamics 365',
-  'Photoshop','Figma','Illustrator','After Effects',
-  'SEO','PPC','Google Ads','Social Media','Content Marketing','Email Marketing',
-  'Event Management','Hospitality Management','Food & Beverage',
-  'Construction Management','AutoCAD','BIM','Quantity Surveying',
-  'Legal Research','Contract Law','Compliance','GDPR',
-  'Nursing','Clinical Research','Pharmacy','Physiotherapy',
-  'HVAC','Electrical Engineering','Mechanical Engineering',
-  'Driving Licence','Forklift','Health & Safety',
-]
+// 130+ skills organised by domain for the search experience
+export const ALL_SKILLS = [
+  // Software Engineering
+  'TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Kotlin', 'Swift', 'C#', 'C++', 'Rust',
+  'PHP', 'Ruby', 'Scala', 'Perl', 'R', 'MATLAB',
+  // Frontend
+  'React', 'Vue', 'Angular', 'Next.js', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS', 'SASS',
+  'React Native', 'Flutter',
+  // Backend & APIs
+  'Node.js', 'Django', 'FastAPI', 'Flask', 'Spring Boot', 'Laravel', 'Rails', 'Express',
+  'GraphQL', 'REST APIs', 'gRPC', 'Microservices',
+  // Data & Databases
+  'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Cassandra', 'DynamoDB',
+  'SQL', 'NoSQL', 'dbt', 'Airflow', 'Kafka', 'Spark', 'Hadoop',
+  // Cloud & Infrastructure
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'Ansible', 'Helm',
+  'CI/CD', 'GitHub Actions', 'Jenkins', 'Linux', 'Bash',
+  // Data Science & AI
+  'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'PyTorch', 'TensorFlow',
+  'scikit-learn', 'Data Analysis', 'Power BI', 'Tableau', 'Looker', 'Databricks',
+  // Product & Delivery
+  'Product Management', 'Agile', 'Scrum', 'PRINCE2', 'Jira', 'Confluence',
+  'OKRs', 'Roadmapping', 'A/B Testing', 'User Research', 'Figma', 'Sketch',
+  // Marketing & Digital
+  'SEO', 'PPC', 'Google Ads', 'Meta Ads', 'Content Marketing', 'Email Marketing',
+  'CRM', 'HubSpot', 'Salesforce', 'Marketo', 'Google Analytics', 'Social Media',
+  'Brand Management', 'PR', 'Copywriting', 'Podcast Production',
+  // Finance & Accounting
+  'Financial Modelling', 'Excel (Advanced)', 'SAP', 'Oracle Financials',
+  'Management Accounts', 'Financial Reporting', 'Budgeting & Forecasting',
+  'Tax Compliance', 'Audit', 'Payroll',
+  // HR & People
+  'HR Management', 'Talent Acquisition', 'L&D', 'HRIS', 'Workday',
+  'Employee Relations', 'Compensation & Benefits', 'TUPE', 'Organisational Design',
+  // Legal & Compliance
+  'Contract Law', 'GDPR', 'Compliance', 'Legal Research', 'Due Diligence',
+  'Employment Law', 'Corporate Law', 'IP Law', 'Regulatory Affairs', 'AML / KYC',
+  // Retail & Buying
+  'Buying & Merchandising', 'Category Management', 'Range Planning',
+  'Supplier Negotiation', 'Stock Management', 'Visual Merchandising', 'Ecommerce Trading',
+  // Events & Hospitality
+  'Event Management', 'Event Production', 'Hospitality Management',
+  'Food & Beverage', 'Revenue Management', 'Opera PMS', 'Ungerboeck',
+  // Construction & Engineering
+  'AutoCAD', 'Revit', 'BIM', 'Quantity Surveying', 'Construction Management',
+  'Project Engineering', 'Health & Safety (IOSH)', 'CDM Regulations',
+  // Healthcare & Life Sciences
+  'Nursing', 'Clinical Research', 'GCP', 'Pharmacovigilance', 'Medidata Rave',
+  'CDISC / SDTM', 'Medical Coding', 'Physiotherapy', 'Mental Health (MHFA)',
+  // Media & Creative
+  'Broadcast Production', 'Video Editing', 'Adobe Premiere', 'After Effects',
+  'Photoshop', 'Illustrator', 'InDesign', 'Final Cut Pro', 'Motion Graphics',
+  // Logistics & Operations
+  'Supply Chain Management', 'Warehouse Management', 'SAP WM', 'Lean / Six Sigma',
+  'Demand Planning', 'Procurement', 'Fleet Management', 'Last-Mile Delivery',
+  // Soft Skills & Certifications
+  'People Management', 'Stakeholder Management', 'Executive Presentations',
+  'Business Analysis', 'Change Management', 'AWS Certified', 'CISSP', 'CFA',
+  'CIMA', 'CIPD', 'MRICS', 'Driving Licence (Full UK)', 'Forklift Licence',
+].sort()
 
 const UK_CITIES = [
   'London','Manchester','Birmingham','Leeds','Glasgow','Edinburgh',
@@ -48,10 +91,17 @@ const UK_CITIES = [
   'Coventry','Derby','Portsmouth','Plymouth','Exeter','Norwich','York',
 ]
 
-interface FilterGroup {
-  label: string
-  key: string
-  open: boolean
+const searchInputStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '0.3rem',
+  padding: '0.35rem 0.6rem',
+  color: '#f8fafc',
+  fontSize: '0.75rem',
+  outline: 'none',
+  boxSizing: 'border-box',
+  marginBottom: '0.5rem',
 }
 
 function FilterSection({ label, open, onToggle, children }: {
@@ -91,6 +141,57 @@ function CheckPill({ label, checked, color, onChange }: {
   )
 }
 
+function SearchableChecklist({ items, selected, onToggle, placeholder }: {
+  items: string[]
+  selected: string[]
+  onToggle: (v: string) => void
+  placeholder: string
+}) {
+  const [q, setQ] = useState('')
+  const filtered = q ? items.filter(i => i.toLowerCase().includes(q.toLowerCase())) : items
+  return (
+    <>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        style={searchInputStyle}
+      />
+      {selected.length > 0 && !q && (
+        <div style={{ marginBottom: '0.4rem' }}>
+          {selected.map(s => (
+            <span key={s} onClick={() => onToggle(s)} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+              background: 'rgba(99,102,241,0.2)', color: '#a5b4fc',
+              border: '1px solid rgba(99,102,241,0.35)', borderRadius: '999px',
+              padding: '0.1rem 0.5rem', fontSize: '0.7rem', cursor: 'pointer',
+              marginRight: '0.3rem', marginBottom: '0.3rem',
+            }}>
+              {s} ×
+            </span>
+          ))}
+        </div>
+      )}
+      <div style={{ maxHeight: '220px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+        {filtered.length === 0 ? (
+          <div style={{ color: '#475569', fontSize: '0.78rem', padding: '0.5rem 0' }}>No results for "{q}"</div>
+        ) : (
+          filtered.map(item => (
+            <CheckPill key={item} label={item}
+              checked={selected.includes(item)}
+              onChange={() => onToggle(item)} />
+          ))
+        )}
+      </div>
+      <div style={{ color: '#334155', fontSize: '0.68rem', marginTop: '0.3rem' }}>
+        {filtered.length} of {items.length} shown
+        {selected.length > 0 && ` · ${selected.length} selected`}
+      </div>
+    </>
+  )
+}
+
 function parseList(v: string | null): string[] {
   return v ? v.split(',').filter(Boolean) : []
 }
@@ -101,7 +202,8 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
   const searchParams = useSearchParams()
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    availability: true, seniority: true, skills: false, location: true, experience: false, prefs: true,
+    availability: true, seniority: true, skills: true, location: true,
+    experience: false, prefs: true, notice: false,
   })
 
   const toggleSection = useCallback((key: string) => {
@@ -126,9 +228,7 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
     update({ [key]: next.join(',') || null })
   }
 
-  const activeCount = Array.from(searchParams.entries()).filter(([k]) => k !== 'q').length
-  const hasFilters = activeCount > 0 || !!get('q')
-
+  const hasFilters = Array.from(searchParams.entries()).length > 0
   const clearAll = () => router.push(pathname)
 
   return (
@@ -153,11 +253,11 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
         )}
       </div>
 
-      {/* Search */}
+      {/* Keyword search */}
       <div style={{ marginBottom: '0.75rem' }}>
         <input
           type="text"
-          placeholder="Search name or title..."
+          placeholder="Search name or job title..."
           defaultValue={get('q') ?? ''}
           onChange={e => update({ q: e.target.value || null })}
           style={{
@@ -186,28 +286,20 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
         </div>
       </FilterSection>
 
+      <FilterSection label={`Skills${getList('skills').length ? ` (${getList('skills').length})` : ''}`} open={openSections.skills} onToggle={() => toggleSection('skills')}>
+        <SearchableChecklist
+          items={ALL_SKILLS}
+          selected={getList('skills')}
+          onToggle={v => toggleListItem('skills', v)}
+          placeholder={`Search ${ALL_SKILLS.length} skills…`}
+        />
+      </FilterSection>
+
       <FilterSection label="Work Preferences" open={openSections.prefs} onToggle={() => toggleSection('prefs')}>
         <CheckPill label="Remote open" checked={get('remote') === '1'} color="#22c55e"
           onChange={v => update({ remote: v ? '1' : null })} />
         <CheckPill label="Open to relocation" checked={get('relocation') === '1'} color="#3b82f6"
           onChange={v => update({ relocation: v ? '1' : null })} />
-      </FilterSection>
-
-      <FilterSection label="Experience (years)" open={openSections.experience} onToggle={() => toggleSection('experience')}>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <input type="number" placeholder="Min" min={0} max={40}
-            defaultValue={get('min_exp') ?? ''}
-            onChange={e => update({ min_exp: e.target.value || null })}
-            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
-          />
-          <span style={{ color: '#475569', fontSize: '0.8rem' }}>to</span>
-          <input type="number" placeholder="Max" min={0} max={40}
-            defaultValue={get('max_exp') ?? ''}
-            onChange={e => update({ max_exp: e.target.value || null })}
-            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
-          />
-          <span style={{ color: '#475569', fontSize: '0.75rem' }}>yrs</span>
-        </div>
       </FilterSection>
 
       <FilterSection label="Location" open={openSections.location} onToggle={() => toggleSection('location')}>
@@ -225,20 +317,44 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
         </select>
       </FilterSection>
 
-      <FilterSection label="Skills" open={openSections.skills} onToggle={() => toggleSection('skills')}>
-        <div style={{ maxHeight: '220px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-          {SKILLS.map(s => (
-            <CheckPill key={s} label={s}
-              checked={getList('skills').includes(s)}
-              onChange={() => toggleListItem('skills', s)} />
+      <FilterSection label="Experience (years)" open={openSections.experience} onToggle={() => toggleSection('experience')}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <input type="number" placeholder="Min" min={0} max={40}
+            defaultValue={get('min_exp') ?? ''}
+            onChange={e => update({ min_exp: e.target.value || null })}
+            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
+          />
+          <span style={{ color: '#475569', fontSize: '0.8rem' }}>to</span>
+          <input type="number" placeholder="Max" min={0} max={40}
+            defaultValue={get('max_exp') ?? ''}
+            onChange={e => update({ max_exp: e.target.value || null })}
+            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
+          />
+          <span style={{ color: '#475569', fontSize: '0.75rem' }}>yrs</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.5rem' }}>
+          {[
+            { label: '0–2 yrs', min: '0', max: '2' },
+            { label: '3–5 yrs', min: '3', max: '5' },
+            { label: '6–10 yrs', min: '6', max: '10' },
+            { label: '10+ yrs', min: '10', max: '' },
+          ].map(r => (
+            <button key={r.label} onClick={() => update({ min_exp: r.min || null, max_exp: r.max || null })}
+              style={{
+                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '0.3rem', padding: '0.2rem 0.5rem', color: '#94a3b8',
+                fontSize: '0.72rem', cursor: 'pointer',
+              }}>
+              {r.label}
+            </button>
           ))}
         </div>
       </FilterSection>
 
-      {/* Notice period */}
-      <FilterSection label="Notice Period" open={false} onToggle={() => toggleSection('notice')}>
+      <FilterSection label="Notice Period" open={openSections.notice} onToggle={() => toggleSection('notice')}>
         {[
           { value: '0', label: 'Immediate / Available now' },
+          { value: '14', label: 'Up to 2 weeks' },
           { value: '30', label: 'Up to 1 month' },
           { value: '60', label: 'Up to 2 months' },
           { value: '90', label: 'Up to 3 months' },

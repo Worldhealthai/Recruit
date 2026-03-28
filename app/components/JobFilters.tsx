@@ -3,88 +3,217 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
-// Comprehensive UK industry list
 export const UK_INDUSTRIES = [
+  // Finance & Professional
   'Accountancy & Finance',
-  'Advertising & PR',
-  'Aerospace & Defence',
-  'Agriculture & Farming',
-  'Architecture',
-  'Arts & Entertainment',
-  'Automotive',
+  'Actuarial',
   'Banking & Investment',
-  'Broadcasting & Media',
-  'Building & Construction',
-  'Charity & Non-Profit',
-  'Chemical & Pharmaceutical',
-  'Civil Service & Government',
-  'Consulting',
-  'Customer Service',
-  'Data & Analytics',
-  'Education & Training',
-  'Energy & Utilities',
-  'Engineering & Manufacturing',
-  'Environmental & Sustainability',
-  'Events & Conferences',
-  'Fashion & Apparel',
   'Financial Services',
   'Fintech',
-  'Food & Beverage',
-  'Food Tech',
-  'Gaming & Esports',
-  'Healthcare & NHS',
-  'Hospitality & Hotels',
-  'HR & Recruitment',
   'Insurance',
+  'Independent Financial Advice',
+  'Private Equity & Venture Capital',
+  'Tax & Audit',
+  'Wealth Management',
+  // Technology
   'IT & Technology',
-  'Legal',
-  'Logistics & Transport',
-  'Management Consulting',
-  'Marketing & Digital',
-  'Media & Publishing',
-  'Property & Real Estate',
-  'Retail',
-  'Retail & E-commerce',
-  'Sales',
-  'Security',
-  'Social Care',
-  'Sports & Leisure',
-  'Supply Chain',
+  'Cybersecurity',
+  'Data & Analytics',
+  'DevOps & Cloud',
+  'SaaS',
+  'Software Development',
   'Tech Startup',
   'Telecommunications',
-  'Travel & Tourism',
+  'Consumer Electronics',
+  'Space Technology',
+  'Gaming & Esports',
+  'Food Tech',
+  'Robotics & Automation',
+  // Marketing & Media
+  'Advertising & PR',
+  'Broadcasting & Media',
+  'Content & Publishing',
+  'Creative & Design',
+  'Digital Agency',
+  'Film & Television Production',
+  'Journalism & Editorial',
+  'Marketing & Digital',
+  'Media & Publishing',
+  'Music & Audio',
+  'Photography & Videography',
+  'Print & Signage',
+  'Public Relations',
+  // Healthcare & Life Sciences
+  'Biotech & Life Sciences',
+  'Chemical & Pharmaceutical',
+  'Dental & Oral Health',
+  'Healthcare & NHS',
+  'Medical Devices',
+  'Mental Health & Wellbeing',
+  'Nursing & Care',
+  'Optometry & Vision Care',
+  'Physiotherapy & Rehabilitation',
+  'Social Care',
   'Veterinary & Animal Care',
+  // Construction & Property
+  'Architecture',
+  'Building & Construction',
+  'Civil Engineering',
+  'Interior Design',
+  'Property & Real Estate',
+  'Property Development',
+  'Facilities Management',
+  'Rail & Infrastructure',
+  'Spatial Planning & Urban Design',
+  // Retail & Consumer
+  'Beauty & Cosmetics',
+  'E-commerce',
+  'Fashion & Apparel',
+  'FMCG',
+  'Jewellery & Luxury Goods',
+  'Pet Care',
+  'Retail',
+  'Retail & E-commerce',
+  'Textiles & Clothing',
   'Wholesale & Distribution',
-]
+  // Hospitality & Events
+  'Events & Conferences',
+  'Food & Beverage',
+  'Hospitality & Hotels',
+  'Sports & Leisure',
+  'Tourism & Heritage',
+  'Travel & Tourism',
+  // Legal & Compliance
+  'Legal',
+  'Compliance & Regulatory',
+  'Intellectual Property',
+  'Paralegal & Legal Support',
+  // HR & Recruitment
+  'HR & Recruitment',
+  'Executive Search',
+  'Payroll & Benefits',
+  'Training & Development',
+  'Outsourcing & BPO',
+  // Logistics & Operations
+  'Logistics & Transport',
+  'Maritime & Shipping',
+  'Supply Chain',
+  'Warehousing & Distribution',
+  'Aviation & Aerospace',
+  'Automotive',
+  // Public Sector & Charity
+  'Charity & Non-Profit',
+  'Civil Service & Government',
+  'Defence & Military',
+  'Education & Training',
+  'Higher Education',
+  'Policy & Government Affairs',
+  'Public Affairs & Lobbying',
+  'Social Enterprise',
+  // Engineering & Industry
+  'Aerospace & Defence',
+  'Agriculture & Farming',
+  'Chemical Engineering',
+  'Electrical Engineering',
+  'Engineering & Manufacturing',
+  'Environmental & Sustainability',
+  'Forestry & Timber',
+  'Mining & Quarrying',
+  'Nuclear Energy',
+  'Oil & Gas',
+  'Packaging',
+  'Renewable Energy',
+  'Waste Management & Recycling',
+  'Water & Environment',
+  // Consulting & Management
+  'Business Process Outsourcing',
+  'Consulting',
+  'Change Management',
+  'Management Consulting',
+  'Research & Consultancy',
+  // Other
+  'Arts & Entertainment',
+  'Franchising',
+  'Import & Export',
+  'Sales',
+  'Security',
+  'Start-up & Scale-up',
+  'Translation & Localisation',
+].sort()
 
-// UK job functions / categories
 export const JOB_FUNCTIONS = [
+  // Tech & Engineering
   'Administration & Secretarial',
+  'Animation & VFX',
   'Architecture & Design',
-  'Business Development',
+  'Audit & Risk',
+  'Broadcasting & Journalism',
   'Buying & Merchandising',
+  'Change Management',
+  'Clinical & Medical Research',
+  'Commercial & Contracts',
+  'Construction Management',
+  'Copywriting & Editorial',
+  'Corporate Finance',
   'Customer Service',
+  'Customer Success',
   'Data & Analytics',
+  'DevOps & Infrastructure',
+  'Digital Transformation',
   'Engineering & Technical',
+  'Environmental & Sustainability',
   'Events & Hospitality',
+  'Executive Assistant',
+  'Film & TV Production',
   'Finance & Accounting',
+  'Franchise & Licensing',
+  'Graphic Design',
   'Healthcare & Medical',
   'HR & People',
+  'Insurance & Underwriting',
+  'Interior Design',
+  'Investment & Asset Management',
   'IT & Technology',
+  'IT Support & Helpdesk',
   'Legal & Compliance',
   'Logistics & Operations',
   'Management & Leadership',
+  'Marine & Maritime',
   'Marketing & Communications',
+  'Mental Health & Counselling',
+  'Oil & Gas Operations',
+  'Paramedical & Allied Health',
+  'Payroll & Compensation',
+  'Photography & Media',
+  'Policy & Government Affairs',
+  'Procurement & Sourcing',
   'Product & UX',
   'Project Management',
+  'Property Development',
+  'Quality Assurance & Testing',
+  'Rail & Transport Operations',
+  'Recruitment & Talent',
+  'Renewable Energy',
   'Research & Development',
+  'Revenue Management',
   'Sales & Account Management',
   'Science & Research',
   'Security',
   'Social Care & Charity',
+  'Software Architecture',
+  'Sports Management',
+  'Supply Chain & Procurement',
+  'Tax & Treasury',
   'Teaching & Training',
+  'Technical Writing',
   'Trades & Construction',
-]
+  'Travel & Tourism Management',
+  'UX Research',
+  'Veterinary & Animal Care',
+  'Warehousing & Distribution',
+  'Wealth Management',
+  'Business Development',
+].sort()
 
 const WORK_MODES = [
   { value: 'REMOTE', label: 'Remote', color: '#22c55e' },
@@ -128,6 +257,19 @@ const UK_CITIES = [
   'Nationwide',
 ]
 
+const searchInputStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '0.3rem',
+  padding: '0.35rem 0.6rem',
+  color: '#f8fafc',
+  fontSize: '0.75rem',
+  outline: 'none',
+  boxSizing: 'border-box',
+  marginBottom: '0.5rem',
+}
+
 function FilterSection({ label, open, onToggle, children, count }: {
   label: string; open: boolean; onToggle: () => void; children: React.ReactNode; count?: number
 }) {
@@ -169,6 +311,56 @@ function CheckPill({ label, checked, color, onChange }: {
       />
       <span style={{ fontSize: '0.82rem', color: checked ? (color ?? '#a5b4fc') : '#94a3b8' }}>{label}</span>
     </label>
+  )
+}
+
+function SearchableChecklist({ items, selected, onToggle, placeholder }: {
+  items: string[]
+  selected: string[]
+  onToggle: (v: string) => void
+  placeholder: string
+}) {
+  const [q, setQ] = useState('')
+  const filtered = q ? items.filter(i => i.toLowerCase().includes(q.toLowerCase())) : items
+  return (
+    <>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        style={searchInputStyle}
+      />
+      {selected.length > 0 && !q && (
+        <div style={{ marginBottom: '0.4rem' }}>
+          {selected.map(s => (
+            <span key={s} onClick={() => onToggle(s)} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+              background: 'rgba(99,102,241,0.2)', color: '#a5b4fc',
+              border: '1px solid rgba(99,102,241,0.35)', borderRadius: '999px',
+              padding: '0.1rem 0.5rem', fontSize: '0.7rem', cursor: 'pointer',
+              marginRight: '0.3rem', marginBottom: '0.3rem',
+            }}>
+              {s} ×
+            </span>
+          ))}
+        </div>
+      )}
+      <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+        {filtered.length === 0 ? (
+          <div style={{ color: '#475569', fontSize: '0.78rem', padding: '0.5rem 0' }}>No results for "{q}"</div>
+        ) : (
+          filtered.map(item => (
+            <CheckPill key={item} label={item}
+              checked={selected.includes(item)}
+              onChange={() => onToggle(item)} />
+          ))
+        )}
+      </div>
+      <div style={{ color: '#334155', fontSize: '0.68rem', marginTop: '0.3rem' }}>
+        {filtered.length} of {items.length} shown
+      </div>
+    </>
   )
 }
 
@@ -233,11 +425,11 @@ export default function JobFilters({ totalResults }: { totalResults: number }) {
         )}
       </div>
 
-      {/* Search */}
+      {/* Keyword search */}
       <div style={{ marginBottom: '0.75rem' }}>
         <input
           type="text"
-          placeholder="Search job title..."
+          placeholder="Search job title or company..."
           defaultValue={get('q') ?? ''}
           onChange={e => update({ q: e.target.value || null })}
           style={{
@@ -249,23 +441,21 @@ export default function JobFilters({ totalResults }: { totalResults: number }) {
       </div>
 
       <FilterSection label="Industry" open={openSections.industry} onToggle={() => toggleSection('industry')} count={getList('industry').length}>
-        <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-          {UK_INDUSTRIES.map(ind => (
-            <CheckPill key={ind} label={ind}
-              checked={getList('industry').includes(ind)}
-              onChange={() => toggleListItem('industry', ind)} />
-          ))}
-        </div>
+        <SearchableChecklist
+          items={UK_INDUSTRIES}
+          selected={getList('industry')}
+          onToggle={v => toggleListItem('industry', v)}
+          placeholder={`Search ${UK_INDUSTRIES.length} industries…`}
+        />
       </FilterSection>
 
       <FilterSection label="Job Function" open={openSections.function} onToggle={() => toggleSection('function')} count={getList('function').length}>
-        <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-          {JOB_FUNCTIONS.map(fn => (
-            <CheckPill key={fn} label={fn}
-              checked={getList('function').includes(fn)}
-              onChange={() => toggleListItem('function', fn)} />
-          ))}
-        </div>
+        <SearchableChecklist
+          items={JOB_FUNCTIONS}
+          selected={getList('function')}
+          onToggle={v => toggleListItem('function', v)}
+          placeholder={`Search ${JOB_FUNCTIONS.length} functions…`}
+        />
       </FilterSection>
 
       <FilterSection label="Work Mode" open={openSections.workMode} onToggle={() => toggleSection('workMode')} count={getList('work_mode').length}>
@@ -307,13 +497,14 @@ export default function JobFilters({ totalResults }: { totalResults: number }) {
               style={{ width: '90px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
             />
           </div>
-          {/* Quick ranges */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
             {[
-              { label: 'Under £30K', min: '', max: '30000' },
-              { label: '£30–60K', min: '30000', max: '60000' },
-              { label: '£60–100K', min: '60000', max: '100000' },
-              { label: '£100K+', min: '100000', max: '' },
+              { label: 'Under £20K', min: '', max: '20000' },
+              { label: '£20–30K', min: '20000', max: '30000' },
+              { label: '£30–50K', min: '30000', max: '50000' },
+              { label: '£50–80K', min: '50000', max: '80000' },
+              { label: '£80–120K', min: '80000', max: '120000' },
+              { label: '£120K+', min: '120000', max: '' },
             ].map(r => (
               <button key={r.label} onClick={() => update({ salary_min: r.min || null, salary_max: r.max || null })}
                 style={{
