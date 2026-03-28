@@ -132,6 +132,17 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
         </div>
       )}
 
+      {/* Pipeline Actions — prominent, before detail sections */}
+      <div style={{ marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Pipeline &amp; Actions</h2>
+          <a href="/pipeline" style={{ fontSize: '0.78rem', color: '#6366f1', textDecoration: 'none' }}>
+            View full pipeline →
+          </a>
+        </div>
+        <CandidateActions initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']} />
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         {/* Skills */}
         <div style={{
@@ -200,16 +211,6 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
         </div>
       </div>
 
-      {/* Pipeline Actions */}
-      <div style={{ marginTop: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Pipeline &amp; Actions</h2>
-          <a href="/pipeline" style={{ fontSize: '0.78rem', color: '#6366f1', textDecoration: 'none' }}>
-            View full pipeline →
-          </a>
-        </div>
-        <CandidateActions initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']} />
-      </div>
     </PageShell>
   )
 }

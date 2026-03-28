@@ -234,8 +234,8 @@ function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: ()
 
         {/* ── Rejected: restore ── */}
         {status === 'REJECTED' && (
-          <button onClick={() => advance('SUGGESTED')} style={{ ...btnBase, background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)', color: '#64748b' }}>
-            Restore to Suggested
+          <button onClick={() => advance('CONTACTED')} style={{ ...btnBase, background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)', color: '#64748b' }}>
+            Restore
           </button>
         )}
 
@@ -269,10 +269,26 @@ const NEXT_STEP: Record<string, string> = {
   REJECTED:     '',
 }
 
+// Stage priority for deduplication — higher index = further along
+const STAGE_RANK: Record<string, number> = {
+  SUGGESTED: 0, CONTACTED: 1, SHORTLISTED: 2,
+  INTERVIEWING: 3, OFFERED: 4, PLACED: 5, REJECTED: -1,
+}
+
 // ─── Main export ─────────────────────────────────────────────────────────────
 export default function CandidateActions({ initialMatches }: { initialMatches: MatchWithJob[] }) {
   const router = useRouter()
-  const matches = initialMatches
+
+  // Deduplicate: one row per job — keep the match furthest along in the pipeline
+  const matches = Object.values(
+    initialMatches.reduce<Record<string, MatchWithJob>>((acc, m) => {
+      const existing = acc[m.job.id]
+      if (!existing || (STAGE_RANK[m.status] ?? 0) > (STAGE_RANK[existing.status] ?? 0)) {
+        acc[m.job.id] = m
+      }
+      return acc
+    }, {})
+  )
 
   const refresh = async () => {
     router.refresh()
