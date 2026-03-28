@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import PageShell from '../../components/PageShell'
+import CandidateActions from './CandidateActions'
 
 const availabilityColor: Record<string, string> = {
   ACTIVELY_LOOKING: '#22c55e',
@@ -24,25 +25,6 @@ const seniorityColor: Record<string, string> = {
   C_SUITE: '#ef4444', EXECUTIVE: '#ef4444',
 }
 
-const statusColors: Record<string, string> = {
-  SUGGESTED: '#64748b', SHORTLISTED: '#8b5cf6', CONTACTED: '#3b82f6',
-  SCREENING: '#f59e0b', SUBMITTED: '#06b6d4', INTERVIEW: '#22c55e',
-  OFFER: '#10b981', PLACED: '#059669', REJECTED: '#ef4444', WITHDRAWN: '#475569',
-}
-
-function ScoreBar({ score, label }: { score: number; label: string }) {
-  const pct = Math.round(score * 100)
-  const color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444'
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-      <span style={{ color: '#64748b', fontSize: '0.78rem', width: '100px', flexShrink: 0 }}>{label}</span>
-      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '999px' }} />
-      </div>
-      <span style={{ color, fontSize: '0.82rem', fontWeight: 700, minWidth: '2.5rem', textAlign: 'right' }}>{pct}%</span>
-    </div>
-  )
-}
 
 export default async function CandidateDetailPage({ params }: { params: { id: string } }) {
   const candidate = await prisma.candidate.findUnique({
@@ -51,9 +33,19 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
       current_company: true,
       skills: { include: { skill: true }, orderBy: { proficiency: 'desc' } },
       matches: {
-        include: { job: { include: { company: true } } },
+        include: {
+          job: { include: { company: true } },
+          screening_calls: {
+            select: { id: true, recommendation: true, status: true },
+            orderBy: { created_at: 'desc' },
+            take: 1,
+          },
+          placement: {
+            select: { id: true, fee_total: true, recruiter_earnings: true },
+          },
+        },
         orderBy: { overall_score: 'desc' },
-        take: 5,
+        take: 10,
       },
     },
   }).catch(() => null)
@@ -200,50 +192,24 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
           }}>
             <h2 style={{ margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700 }}>Contact</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {candidate.email && <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>✉ {candidate.email}</div>}
-              <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>📍 {candidate.location_city}, {candidate.location_country}</div>
-              <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>🔍 Source: {candidate.source.replace(/_/g, ' ')}</div>
+              {candidate.email && <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{candidate.email}</div>}
+              <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{candidate.location_city}, {candidate.location_country}</div>
+              <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Source: {candidate.source.replace(/_/g, ' ')}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* AI Matches */}
-      {candidate.matches.length > 0 && (
-        <div style={{
-          marginTop: '1.5rem',
-          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: '0.75rem', padding: '1.5rem',
-        }}>
-          <h2 style={{ margin: '0 0 1.25rem', fontSize: '1rem', fontWeight: 700 }}>AI Job Matches</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {candidate.matches.map((m) => (
-              <Link key={m.id} href={`/matches/${m.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="hover-card" style={{
-                  display: 'grid', gridTemplateColumns: '1fr 200px auto',
-                  gap: '1rem', alignItems: 'center',
-                  padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)',
-                  borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.06)',
-                  cursor: 'pointer',
-                }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{m.job.title}</div>
-                    <div style={{ color: '#64748b', fontSize: '0.78rem' }}>{m.job.company?.name}</div>
-                  </div>
-                  <ScoreBar score={m.overall_score} label="" />
-                  <span style={{
-                    background: `${statusColors[m.status] ?? '#64748b'}22`,
-                    color: statusColors[m.status] ?? '#64748b',
-                    border: `1px solid ${statusColors[m.status] ?? '#64748b'}44`,
-                    borderRadius: '0.3rem', padding: '0.15rem 0.5rem', fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap',
-                  }}>{m.status}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+      {/* Pipeline Actions */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Pipeline &amp; Actions</h2>
+          <a href="/pipeline" style={{ fontSize: '0.78rem', color: '#6366f1', textDecoration: 'none' }}>
+            View full pipeline →
+          </a>
         </div>
-      )}
+        <CandidateActions initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']} />
+      </div>
     </PageShell>
   )
 }
