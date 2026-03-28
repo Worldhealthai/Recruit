@@ -276,8 +276,41 @@ const STAGE_RANK: Record<string, number> = {
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
-export default function CandidateActions({ initialMatches }: { initialMatches: MatchWithJob[] }) {
+export default function CandidateActions({
+  initialMatches,
+  candidateId,
+  fallbackJobId,
+}: {
+  initialMatches: MatchWithJob[]
+  candidateId: string
+  fallbackJobId: string | null
+}) {
   const router = useRouter()
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
+
+  const quickAdd = async (initialStatus: string) => {
+    if (!fallbackJobId) return
+    setCreating(true); setCreateError('')
+    try {
+      const res = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate: { connect: { id: candidateId } },
+          job: { connect: { id: fallbackJobId } },
+          status: initialStatus,
+          overall_score: 0.75,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to add to pipeline')
+      router.refresh()
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : 'Error')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   // Deduplicate: one row per job — keep the match furthest along in the pipeline
   const matches = Object.values(
@@ -298,8 +331,34 @@ export default function CandidateActions({ initialMatches }: { initialMatches: M
 
   if (matches.length === 0) {
     return (
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '0.75rem', padding: '2rem', textAlign: 'center', color: '#475569', fontSize: '0.9rem' }}>
-        No AI matches yet. Run the matching engine to find suitable roles for this candidate.
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.5rem' }}>
+        <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.4rem' }}>Not yet in pipeline</div>
+        <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+          Add this candidate to your pipeline to start tracking their progress.
+        </div>
+        {createError && <div style={{ color: '#f87171', fontSize: '0.78rem', marginBottom: '0.75rem' }}>{createError}</div>}
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => quickAdd('CONTACTED')}
+            disabled={creating || !fallbackJobId}
+            style={{ background: 'rgba(59,130,246,0.18)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', borderRadius: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '0.82rem', fontWeight: 600, cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1 }}
+          >
+            {creating ? 'Adding…' : 'Mark as Contacted'}
+          </button>
+          <button
+            onClick={() => quickAdd('SHORTLISTED')}
+            disabled={creating || !fallbackJobId}
+            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.35)', color: '#a78bfa', borderRadius: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '0.82rem', fontWeight: 600, cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1 }}
+          >
+            Shortlist
+          </button>
+          {!fallbackJobId && (
+            <span style={{ color: '#334155', fontSize: '0.78rem', alignSelf: 'center' }}>
+              No active jobs found —{' '}
+              <a href="/jobs" style={{ color: '#6366f1', textDecoration: 'none' }}>add a job first</a>
+            </span>
+          )}
+        </div>
       </div>
     )
   }
@@ -309,8 +368,6 @@ export default function CandidateActions({ initialMatches }: { initialMatches: M
       {matches.map((m) => {
         const statusColor = STATUS_COLOR[m.status] ?? '#64748b'
         const screen = m.screening_calls[0]
-        const pct = Math.round(m.overall_score * 100)
-        const scoreColor = pct >= 85 ? '#22c55e' : pct >= 70 ? '#f59e0b' : '#ef4444'
 
         return (
           <div key={m.id} style={{
@@ -319,7 +376,7 @@ export default function CandidateActions({ initialMatches }: { initialMatches: M
             borderRadius: '0.6rem',
             padding: '0.9rem 1.1rem',
           }}>
-            {/* Top row: job info + score + status */}
+            {/* Top row: job info + status */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '180px' }}>
                 <a href={`/jobs/${m.job.id}`} style={{ fontWeight: 600, fontSize: '0.88rem', color: '#f1f5f9', textDecoration: 'none' }}>
@@ -328,14 +385,6 @@ export default function CandidateActions({ initialMatches }: { initialMatches: M
                 <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.1rem' }}>
                   {m.job.company?.name}
                 </div>
-              </div>
-
-              {/* Score */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <div style={{ width: '44px', height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: scoreColor, borderRadius: '2px' }} />
-                </div>
-                <span style={{ fontSize: '0.75rem', color: scoreColor, fontWeight: 700 }}>{pct}%</span>
               </div>
 
               {/* Status badge */}

@@ -39,18 +39,6 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const pct = Math.round(score * 100)
-  const color = pct >= 85 ? '#22c55e' : pct >= 70 ? '#f59e0b' : '#ef4444'
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-      <div style={{ width: '48px', height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px' }} />
-      </div>
-      <span style={{ fontSize: '0.75rem', color, fontWeight: 700 }}>{pct}%</span>
-    </div>
-  )
-}
 
 // ─── Placement Modal ─────────────────────────────────────────────────────────
 function PlacementModal({ match, onClose, onSuccess }: {
@@ -408,12 +396,12 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
         {/* Table header */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1.8fr 1.8fr 80px 100px 120px 1fr',
+          gridTemplateColumns: '2fr 2fr 120px 140px 1fr',
           gap: '0', padding: '0.7rem 1.25rem',
           background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)',
           fontSize: '0.7rem', color: '#475569', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
         }}>
-          <span>Candidate</span><span>Role</span><span>Score</span><span>Status</span><span>Screening</span><span style={{ textAlign: 'right' as const }}>Actions</span>
+          <span>Candidate</span><span>Role</span><span>Status</span><span>Screening</span><span style={{ textAlign: 'right' as const }}>Actions</span>
         </div>
 
         {displayed.length === 0 ? (
@@ -428,7 +416,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
 
             return (
               <div key={m.id} style={{
-                display: 'grid', gridTemplateColumns: '1.8fr 1.8fr 80px 100px 120px 1fr',
+                display: 'grid', gridTemplateColumns: '2fr 2fr 120px 140px 1fr',
                 gap: '0', padding: '1rem 1.25rem', alignItems: 'center',
                 borderBottom: idx < displayed.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 background: isPlaced ? 'rgba(34,197,94,0.03)' : 'transparent',
@@ -457,9 +445,6 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
                     {m.job.company?.name} · {m.job.company?.industry}
                   </div>
                 </div>
-
-                {/* Score */}
-                <div><ScoreBar score={m.overall_score} /></div>
 
                 {/* Status */}
                 <div><StatusBadge status={m.status} /></div>

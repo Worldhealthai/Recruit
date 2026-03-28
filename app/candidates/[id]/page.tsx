@@ -27,7 +27,8 @@ const seniorityColor: Record<string, string> = {
 
 
 export default async function CandidateDetailPage({ params }: { params: { id: string } }) {
-  const candidate = await prisma.candidate.findUnique({
+  const [candidate, fallbackJob] = await Promise.all([
+   prisma.candidate.findUnique({
     where: { id: params.id },
     include: {
       current_company: true,
@@ -48,7 +49,9 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
         take: 10,
       },
     },
-  }).catch(() => null)
+   }).catch(() => null),
+   prisma.job.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } }).catch(() => null),
+  ])
 
   if (!candidate) notFound()
 
@@ -140,7 +143,11 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
             View full pipeline →
           </a>
         </div>
-        <CandidateActions initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']} />
+        <CandidateActions
+          candidateId={candidate.id}
+          fallbackJobId={fallbackJob?.id ?? null}
+          initialMatches={candidate.matches as Parameters<typeof CandidateActions>[0]['initialMatches']}
+        />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
