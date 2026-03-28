@@ -69,7 +69,7 @@ function ScreeningModal({ match, onClose, onDone }: {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: '440px', boxShadow: '0 25px 60px rgba(0,0,0,0.7)' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Screening Call</div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Phone Screen</div>
           <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.25rem' }}>
             {match.job.title} · {match.job.company?.name}
           </div>
@@ -91,7 +91,7 @@ function ScreeningModal({ match, onClose, onDone }: {
         ) : step === 0 ? (
           <div>
             <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-              The AI will conduct a structured screening call, score every response, flag concerns, and deliver a hiring recommendation.
+              The AI will conduct a structured phone call, score every response, flag concerns, and deliver a hiring recommendation.
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1.5rem' }}>
               {['Role-specific competency questions', 'Salary & notice confirmation', 'Motivation & cultural fit probing', 'Key concerns flagged', 'Scored transcript + recommendation'].map(item => (
@@ -171,67 +171,80 @@ function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: ()
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
+
+        {/* ── Step 1: Suggest → Contact ── */}
         {status === 'SUGGESTED' && (
-          <button onClick={() => advance('CONTACTED')} style={{ ...btnBase, background: 'rgba(59,130,246,0.15)', borderColor: 'rgba(59,130,246,0.4)', color: '#60a5fa' }}>
-            Contact
+          <button onClick={() => advance('CONTACTED')} style={{ ...btnBase, background: 'rgba(59,130,246,0.18)', borderColor: 'rgba(59,130,246,0.45)', color: '#60a5fa', padding: '0.35rem 1rem' }}>
+            Mark as Contacted
           </button>
         )}
 
+        {/* ── Step 2: Contacted → run phone screen or shortlist ── */}
         {status === 'CONTACTED' && (
           <>
-            <button onClick={() => advance('SHORTLISTED')} style={{ ...btnBase, background: 'rgba(139,92,246,0.15)', borderColor: 'rgba(139,92,246,0.4)', color: '#a78bfa' }}>
-              Shortlist
+            <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.18)', borderColor: 'rgba(99,102,241,0.45)', color: '#a5b4fc', padding: '0.35rem 1rem' }}>
+              Run AI Phone Screen
             </button>
-            <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.4)', color: '#a5b4fc' }}>
-              AI Screening
+            <button onClick={() => advance('SHORTLISTED')} style={{ ...btnBase, background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.3)', color: '#a78bfa' }}>
+              Shortlist
             </button>
           </>
         )}
 
+        {/* ── Step 3: Shortlisted → screen if not done, then interview ── */}
         {status === 'SHORTLISTED' && (
           <>
-            <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: hasScreen ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.35)', color: '#a5b4fc' }}>
-              {hasScreen ? 'Review Screening' : 'AI Screening'}
-            </button>
-            <button onClick={() => advance('INTERVIEWING')} style={{ ...btnBase, background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.35)', color: '#fbbf24' }}>
+            {!hasScreen && (
+              <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.4)', color: '#a5b4fc' }}>
+                Run AI Phone Screen
+              </button>
+            )}
+            {hasScreen && (
+              <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.25)', color: '#818cf8' }}>
+                Review Screening
+              </button>
+            )}
+            <button onClick={() => advance('INTERVIEWING')} style={{ ...btnBase, background: 'rgba(245,158,11,0.15)', borderColor: 'rgba(245,158,11,0.4)', color: '#fbbf24', padding: '0.35rem 1rem' }}>
               Schedule Interview
             </button>
           </>
         )}
 
+        {/* ── Step 4: Interviewing → offer ── */}
         {status === 'INTERVIEWING' && (
-          <>
-            <button onClick={() => advance('OFFERED')} style={{ ...btnBase, background: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.35)', color: '#fb923c' }}>
-              Make Offer
-            </button>
-            <a href="/pipeline" style={{ ...btnBase, background: 'rgba(34,197,94,0.1)', borderColor: 'rgba(34,197,94,0.3)', color: '#4ade80', textDecoration: 'none', display: 'inline-block' }}>
-              Convert to Placement
-            </a>
-          </>
-        )}
-
-        {status === 'OFFERED' && (
-          <a href="/pipeline" style={{ ...btnBase, background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.35)', color: '#4ade80', textDecoration: 'none', display: 'inline-block' }}>
-            Convert to Placement
-          </a>
-        )}
-
-        {status === 'PLACED' && match.placement && (
-          <a href={`/placements/${match.placement.id}`} style={{ ...btnBase, background: 'rgba(251,191,36,0.1)', borderColor: 'rgba(251,191,36,0.25)', color: '#fbbf24', textDecoration: 'none', display: 'inline-block' }}>
-            £{Math.round(Number(match.placement.recruiter_earnings)).toLocaleString()} earned
-          </a>
-        )}
-
-        {(status === 'REJECTED') && (
-          <button onClick={() => advance('SUGGESTED')} style={{ ...btnBase, background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)', color: '#475569' }}>
-            Restore
+          <button onClick={() => advance('OFFERED')} style={{ ...btnBase, background: 'rgba(249,115,22,0.15)', borderColor: 'rgba(249,115,22,0.4)', color: '#fb923c', padding: '0.35rem 1rem' }}>
+            Make Offer
           </button>
         )}
 
-        <button onClick={() => advance('REJECTED')} disabled={status === 'REJECTED' || status === 'PLACED'} style={{ ...btnBase, background: 'transparent', borderColor: 'rgba(239,68,68,0.2)', color: '#64748b', opacity: (status === 'REJECTED' || status === 'PLACED') ? 0.3 : 1 }}>
-          Reject
-        </button>
+        {/* ── Step 5: Offered → place (go to pipeline for full placement form) ── */}
+        {status === 'OFFERED' && (
+          <a href="/pipeline" style={{ ...btnBase, background: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.4)', color: '#4ade80', textDecoration: 'none', display: 'inline-block', padding: '0.35rem 1rem' }}>
+            Confirm Placement →
+          </a>
+        )}
+
+        {/* ── Placed: show earnings ── */}
+        {status === 'PLACED' && match.placement && (
+          <a href={`/placements/${match.placement.id}`} style={{ ...btnBase, background: 'rgba(251,191,36,0.1)', borderColor: 'rgba(251,191,36,0.25)', color: '#fbbf24', textDecoration: 'none', display: 'inline-block' }}>
+            £{Math.round(Number(match.placement.recruiter_earnings)).toLocaleString()} earned — view
+          </a>
+        )}
+
+        {/* ── Rejected: restore ── */}
+        {status === 'REJECTED' && (
+          <button onClick={() => advance('SUGGESTED')} style={{ ...btnBase, background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)', color: '#64748b' }}>
+            Restore to Suggested
+          </button>
+        )}
+
+        {/* Reject — available on any active stage */}
+        {!['PLACED', 'REJECTED'].includes(status) && (
+          <button onClick={() => advance('REJECTED')} style={{ ...btnBase, background: 'transparent', borderColor: 'rgba(239,68,68,0.2)', color: '#475569' }}>
+            Reject
+          </button>
+        )}
       </div>
 
       {showScreening && (
@@ -247,13 +260,13 @@ function MatchActions({ match, onRefresh }: { match: MatchWithJob; onRefresh: ()
 
 // ─── Pipeline status label with next-step hint ───────────────────────────────
 const NEXT_STEP: Record<string, string> = {
-  SUGGESTED:    'Next: contact candidate',
-  CONTACTED:    'Next: shortlist or screen',
-  SHORTLISTED:  'Next: schedule interview',
-  INTERVIEWING: 'Next: make offer',
-  OFFERED:      'Next: confirm placement',
+  SUGGESTED:    'Mark as contacted once you reach out',
+  CONTACTED:    'Run AI phone screen or shortlist directly',
+  SHORTLISTED:  'Run phone screen then schedule interview',
+  INTERVIEWING: 'Make offer when ready',
+  OFFERED:      'Go to pipeline to confirm placement',
   PLACED:       'Placement confirmed',
-  REJECTED:     'Rejected',
+  REJECTED:     '',
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────

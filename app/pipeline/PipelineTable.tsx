@@ -274,7 +274,7 @@ function ScreeningModal({ match, onClose, onScreened }: {
         boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
       }}>
         <div style={{ textAlign: 'center' as const, marginBottom: '1.5rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Screening Call</div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Phone Screen</div>
           <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.2rem' }}>
             {match.candidate.first_name} {match.candidate.last_name} → {match.job.title}
           </div>
@@ -305,7 +305,7 @@ function ScreeningModal({ match, onClose, onScreened }: {
           // Pre-call confirmation screen
           <div>
             <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center' as const, marginBottom: '1.5rem' }}>
-              The AI will conduct a structured 25–35 minute video call, score every response, flag concerns, and deliver a hiring recommendation — instantly saved to your Screening dashboard.
+              The AI will conduct a structured phone call, score every response, flag concerns, and deliver a hiring recommendation — instantly saved to your Screening dashboard.
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
               {['Role-specific competency questions', 'Salary & notice confirmation', 'Motivation & cultural fit probing', 'Key concern flagging', 'Scored transcript + recommendation'].map(item => (
@@ -374,17 +374,19 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
   const [screeningMatch, setScreeningMatch] = useState<Match | null>(null)
   const [filter, setFilter] = useState('ALL')
 
-  const statusOrder = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED', 'INTERVIEWING', 'OFFERED', 'PLACED', 'REJECTED']
-  const filterOptions = ['ALL', ...statusOrder.filter(s => matches.some(m => m.status === s))]
+  // SUGGESTED lives in /matches (AI suggestions). REJECTED is noise. Pipeline = active work.
+  const PIPELINE_STATUSES = ['CONTACTED', 'SHORTLISTED', 'INTERVIEWING', 'OFFERED', 'PLACED']
+  const pipelineMatches = matches.filter(m => PIPELINE_STATUSES.includes(m.status))
+  const filterOptions = ['ALL', ...PIPELINE_STATUSES.filter(s => pipelineMatches.some(m => m.status === s))]
 
-  const displayed = filter === 'ALL' ? matches : matches.filter(m => m.status === filter)
+  const displayed = filter === 'ALL' ? pipelineMatches : pipelineMatches.filter(m => m.status === filter)
 
   return (
     <>
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         {filterOptions.map(f => {
-          const count = f === 'ALL' ? matches.length : matches.filter(m => m.status === f).length
+          const count = f === 'ALL' ? pipelineMatches.length : pipelineMatches.filter(m => m.status === f).length
           const active = filter === f
           return (
             <button key={f} onClick={() => setFilter(f)} style={{
