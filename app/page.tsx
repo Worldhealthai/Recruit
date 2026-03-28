@@ -25,14 +25,13 @@ async function getStats() {
 }
 
 const pages = [
-  { href: '/candidates',      label: 'Candidates',      desc: 'Search & filter talent profiles with AI match scoring',  icon: '👤' },
-  { href: '/jobs',            label: 'Jobs',            desc: 'Active job listings with full JD, requirements & top matches', icon: '💼' },
-  { href: '/companies',       label: 'Companies',       desc: 'Company profiles, tech stack, culture and open roles',    icon: '🏢' },
-  { href: '/matches',         label: 'AI Matches',      desc: '6-dimension AI scoring with full reasoning per match',    icon: '🤝' },
-  { href: '/screening',       label: 'AI Screening',    desc: 'Automated video calls with transcript, Q&A and STRONG YES/NO rec', icon: '📞' },
-  { href: '/placements',      label: 'Placements',      desc: 'Confirmed hires, fee invoices, guarantee periods & net earnings', icon: '💰' },
-  { href: '/market-insights', label: 'Market Insights', desc: 'Salary benchmarks, hiring trends and skill demand signals',icon: '📊' },
-  { href: '/recruiters',      label: 'Recruiters',      desc: 'Portfolio dashboard: billings, pipeline value and KPIs',  icon: '🧑‍💼' },
+  { href: '/pipeline',        label: 'My Pipeline',     desc: 'Manage your active candidates through each stage of the process' },
+  { href: '/candidates',      label: 'Candidates',      desc: 'Search and filter talent profiles with AI match scoring' },
+  { href: '/jobs',            label: 'Jobs',            desc: 'Active job listings with full JD, requirements and top matches' },
+  { href: '/matches',         label: 'AI Matches',      desc: '6-dimension AI scoring with full reasoning per match' },
+  { href: '/screening',       label: 'AI Screening',    desc: 'Automated video calls with transcript, Q&A and hiring recommendation' },
+  { href: '/placements',      label: 'Placements',      desc: 'Confirmed hires, fee invoices, guarantee periods and net earnings' },
+  { href: '/market-insights', label: 'Market Insights', desc: 'Salary benchmarks, hiring trends and skill demand signals' },
 ]
 
 export default async function Home() {
@@ -165,7 +164,7 @@ export default async function Home() {
           Explore the Platform
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.9rem' }}>
-          {pages.map(({ href, label, desc, icon }) => (
+          {pages.map(({ href, label, desc }) => (
             <Link key={href} href={href} className="hover-card" style={{
               display: 'block',
               background: 'rgba(255,255,255,0.04)',
@@ -174,8 +173,7 @@ export default async function Home() {
               padding: '1.25rem 1.5rem',
               textDecoration: 'none',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+              <div style={{ marginBottom: '0.4rem' }}>
                 <span style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '0.9rem' }}>{label}</span>
               </div>
               <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{desc}</p>

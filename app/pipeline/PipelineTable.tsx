@@ -206,7 +206,7 @@ function PlacementModal({ match, onClose, onSuccess }: {
             borderRadius: '0.5rem', padding: '0.7rem', fontSize: '0.85rem', fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
           }}>
-            {loading ? 'Creating placement…' : `✓ Confirm Placement — £${netEarnings.toLocaleString()} earnings`}
+            {loading ? 'Creating placement…' : `Confirm Placement — £${netEarnings.toLocaleString()} earnings`}
           </button>
         </div>
       </div>
@@ -223,12 +223,12 @@ function ScreeningModal({ match, onClose, onScreened }: {
   const [result, setResult] = useState<{ recommendation: string } | null>(null)
 
   const steps = [
-    { icon: '🔍', label: 'Analysing match profile…',        color: '#6366f1' },
-    { icon: '📋', label: 'Preparing tailored questions…',   color: '#8b5cf6' },
-    { icon: '📞', label: 'Initiating AI video call…',       color: '#3b82f6' },
-    { icon: '🤖', label: 'Screening in progress…',          color: '#06b6d4' },
-    { icon: '📊', label: 'Scoring responses…',              color: '#f59e0b' },
-    { icon: '✅', label: 'Generating recommendation…',      color: '#22c55e' },
+    { label: 'Analysing match profile',       color: '#6366f1' },
+    { label: 'Preparing tailored questions',  color: '#8b5cf6' },
+    { label: 'Initiating AI video call',      color: '#3b82f6' },
+    { label: 'Screening in progress',         color: '#06b6d4' },
+    { label: 'Scoring responses',             color: '#f59e0b' },
+    { label: 'Generating recommendation',     color: '#22c55e' },
   ]
 
   const existing = match.screening_calls[0]
@@ -274,7 +274,6 @@ function ScreeningModal({ match, onClose, onScreened }: {
         boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
       }}>
         <div style={{ textAlign: 'center' as const, marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎙</div>
           <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Screening Call</div>
           <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.2rem' }}>
             {match.candidate.first_name} {match.candidate.last_name} → {match.job.title}
@@ -309,7 +308,7 @@ function ScreeningModal({ match, onClose, onScreened }: {
               The AI will conduct a structured 25–35 minute video call, score every response, flag concerns, and deliver a hiring recommendation — instantly saved to your Screening dashboard.
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              {['📋 Role-specific competency questions', '💰 Salary & notice confirmation', '🤔 Motivation & cultural fit probing', '⚠️ Key concern flagging', '📊 Scored transcript + recommendation'].map(item => (
+              {['Role-specific competency questions', 'Salary & notice confirmation', 'Motivation & cultural fit probing', 'Key concern flagging', 'Scored transcript + recommendation'].map(item => (
                 <div key={item} style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{item}</div>
               ))}
             </div>
@@ -319,7 +318,7 @@ function ScreeningModal({ match, onClose, onScreened }: {
               color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.85rem',
               fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
             }}>
-              🚀 Start AI Screening Call
+              Start AI Screening Call
             </button>
             <button onClick={onClose} style={{ width: '100%', background: 'transparent', border: 'none', color: '#475569', padding: '0.6rem', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.4rem' }}>Cancel</button>
           </div>
@@ -329,10 +328,10 @@ function ScreeningModal({ match, onClose, onScreened }: {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
               {steps.map((step, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: i < simStep ? 1 : i === simStep ? 0.8 : 0.2, transition: 'opacity 0.3s' }}>
-                  <span style={{ fontSize: '1.1rem' }}>{step.icon}</span>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: i < simStep ? '#4ade80' : step.color, flexShrink: 0, display: 'inline-block' }} />
                   <span style={{ fontSize: '0.82rem', color: i < simStep ? '#4ade80' : step.color }}>{step.label}</span>
-                  {i < simStep && <span style={{ marginLeft: 'auto', color: '#4ade80', fontSize: '0.75rem' }}>✓</span>}
-                  {i === simStep && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: step.color }}>●</span>}
+                  {i < simStep && <span style={{ marginLeft: 'auto', color: '#4ade80', fontSize: '0.75rem' }}>done</span>}
+                  {i === simStep && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: step.color }}>running</span>}
                 </div>
               ))}
             </div>
@@ -344,8 +343,7 @@ function ScreeningModal({ match, onClose, onScreened }: {
         ) : (
           // Complete — show result and link to screening page
           <div style={{ textAlign: 'center' as const }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.3rem' }}>Screening Complete!</div>
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.3rem' }}>Screening Complete</div>
             {result && (
               <div style={{ fontSize: '1.2rem', fontWeight: 700, color: RECOMMEND_COLOR[result.recommendation] ?? '#94a3b8', marginBottom: '0.8rem' }}>
                 {result.recommendation.replace(/_/g, ' ')}
@@ -489,7 +487,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
                         borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
                         fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const,
                       }}>
-                      {hasScreen ? '🎙 Review Call' : '🎙 Run AI Call'}
+                      {hasScreen ? 'Review Screening' : 'Run AI Screening'}
                     </button>
                   )}
 
@@ -501,7 +499,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
                         color: '#4ade80', borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
                         fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const,
                       }}>
-                      💼 Convert to Placement
+                      Convert to Placement
                     </button>
                   )}
 
@@ -511,7 +509,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
                       color: '#fbbf24', borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
                       fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const,
                     }}>
-                      💰 £{Math.round(Number(m.placement.recruiter_earnings)).toLocaleString()} earned
+                      £{Math.round(Number(m.placement.recruiter_earnings)).toLocaleString()} earned
                     </a>
                   )}
 

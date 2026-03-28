@@ -100,7 +100,7 @@ export default async function PipelinePage() {
               color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.5rem 1rem',
               fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none',
             }}>
-              🎙 All Screenings
+              All Screenings
             </a>
             <a href="/placements" style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
@@ -108,7 +108,7 @@ export default async function PipelinePage() {
               color: '#4ade80', borderRadius: '0.5rem', padding: '0.5rem 1rem',
               fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none',
             }}>
-              💰 Earnings & Invoices
+              Earnings &amp; Invoices
             </a>
           </div>
         </div>
