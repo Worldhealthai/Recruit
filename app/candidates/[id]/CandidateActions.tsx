@@ -259,7 +259,7 @@ const NEXT_STEP: Record<string, string> = {
 // ─── Main export ─────────────────────────────────────────────────────────────
 export default function CandidateActions({ initialMatches }: { initialMatches: MatchWithJob[] }) {
   const router = useRouter()
-  const [matches, setMatches] = useState(initialMatches)
+  const matches = initialMatches
 
   const refresh = async () => {
     router.refresh()
