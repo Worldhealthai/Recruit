@@ -1,0 +1,531 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+type SkillEdge = { skill: { name: string } }
+type Candidate = {
+  id: string; first_name: string; last_name: string; current_title: string | null
+  salary_expectation_min: number | null; salary_expectation_max: number | null
+  current_company: { name: string } | null; skills: SkillEdge[]
+}
+type Job = { id: string; title: string; company: { name: string; industry: string } | null; salary_max: number | null }
+type ScreeningCall = { id: string; recommendation: string | null; status: string }
+type Placement = { id: string; fee_total: number; recruiter_earnings: number; invoice_status: string }
+type Match = {
+  id: string; status: string; overall_score: number
+  candidate: Candidate; job: Job; screening_calls: ScreeningCall[]; placement: Placement | null
+}
+
+const STATUS_COLOR: Record<string, string> = {
+  SUGGESTED: '#64748b', CONTACTED: '#3b82f6', SHORTLISTED: '#8b5cf6',
+  INTERVIEWING: '#f59e0b', OFFERED: '#f97316', PLACED: '#22c55e', REJECTED: '#ef4444',
+}
+
+const RECOMMEND_COLOR: Record<string, string> = {
+  STRONG_YES: '#22c55e', YES: '#4ade80', MAYBE: '#f59e0b',
+  NO: '#f87171', STRONG_NO: '#ef4444',
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const color = STATUS_COLOR[status] ?? '#64748b'
+  return (
+    <span style={{
+      background: `${color}1a`, color, border: `1px solid ${color}44`,
+      borderRadius: '0.3rem', padding: '0.15rem 0.6rem', fontSize: '0.7rem', fontWeight: 700,
+    }}>
+      {status.replace(/_/g, ' ')}
+    </span>
+  )
+}
+
+function ScoreBar({ score }: { score: number }) {
+  const pct = Math.round(score * 100)
+  const color = pct >= 85 ? '#22c55e' : pct >= 70 ? '#f59e0b' : '#ef4444'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+      <div style={{ width: '48px', height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px' }} />
+      </div>
+      <span style={{ fontSize: '0.75rem', color, fontWeight: 700 }}>{pct}%</span>
+    </div>
+  )
+}
+
+// ─── Placement Modal ─────────────────────────────────────────────────────────
+function PlacementModal({ match, onClose, onSuccess }: {
+  match: Match; onClose: () => void; onSuccess: () => void
+}) {
+  const candidateMid = Math.round(
+    ((match.candidate.salary_expectation_min ?? 60000) + (match.candidate.salary_expectation_max ?? 80000)) / 2
+  )
+  const [salary, setSalary] = useState(candidateMid.toString())
+  const [feePct, setFeePct] = useState('20')
+  const [feeType, setFeeType] = useState('CONTINGENCY')
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 30)
+    return d.toISOString().split('T')[0]
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const grossFee   = Math.round((Number(salary) || 0) * ((Number(feePct) || 0) / 100))
+  const platformCut = Math.round(grossFee * 0.10)
+  const netEarnings = grossFee - platformCut
+
+  const submit = async () => {
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/placements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: match.id,
+          candidateId: match.candidate.id,
+          jobId: match.job.id,
+          agreedSalary: Number(salary),
+          feePercentage: Number(feePct) / 100,
+          feeType,
+          startDate,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create placement')
+      onSuccess()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 200,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: '480px',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+      }}>
+        {/* Header */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '0.72rem', color: '#6366f1', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' as const, marginBottom: '0.4rem' }}>
+            Convert to Placement
+          </div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>
+            {match.candidate.first_name} {match.candidate.last_name}
+          </div>
+          <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.15rem' }}>
+            {match.job.title} · {match.job.company?.name}
+          </div>
+        </div>
+
+        {/* Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '0.3rem' }}>Agreed Salary (£)</label>
+            <input type="number" value={salary} onChange={e => setSalary(e.target.value)}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '0.4rem', padding: '0.6rem 0.75rem', color: '#f8fafc', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' as const }} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div>
+              <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '0.3rem' }}>Fee Type</label>
+              <select value={feeType} onChange={e => setFeeType(e.target.value)}
+                style={{ width: '100%', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.4rem', padding: '0.55rem 0.6rem', color: '#f8fafc', fontSize: '0.82rem', outline: 'none', cursor: 'pointer' }}>
+                <option value="CONTINGENCY">Contingency</option>
+                <option value="RETAINED">Retained</option>
+                <option value="FLAT_FEE">Flat Fee</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '0.3rem' }}>Fee % (of salary)</label>
+              <div style={{ position: 'relative' as const }}>
+                <input type="number" value={feePct} min={5} max={35} onChange={e => setFeePct(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '0.4rem', padding: '0.6rem 1.8rem 0.6rem 0.75rem', color: '#f8fafc', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' as const }} />
+                <span style={{ position: 'absolute' as const, right: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#475569', fontSize: '0.85rem' }}>%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick fee % presets */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            {['15', '17.5', '20', '22.5', '25'].map(p => (
+              <button key={p} onClick={() => setFeePct(p)} style={{
+                background: feePct === p ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${feePct === p ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                color: feePct === p ? '#a5b4fc' : '#64748b',
+                borderRadius: '0.3rem', padding: '0.2rem 0.6rem', fontSize: '0.75rem', cursor: 'pointer',
+              }}>{p}%</button>
+            ))}
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'block', marginBottom: '0.3rem' }}>Start Date</label>
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '0.4rem', padding: '0.6rem 0.75rem', color: '#f8fafc', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' as const, colorScheme: 'dark' as const }} />
+          </div>
+
+          {/* Live fee calculation */}
+          <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '0.6rem', padding: '1rem' }}>
+            <div style={{ fontSize: '0.72rem', color: '#6366f1', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const, marginBottom: '0.6rem' }}>Fee Breakdown</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {[
+                { label: 'Agreed Salary', value: `£${Number(salary || 0).toLocaleString()}`, color: '#94a3b8' },
+                { label: `Fee (${feePct}% × salary)`, value: `£${grossFee.toLocaleString()}`, color: '#a5b4fc' },
+                { label: 'Platform cut (10%)', value: `−£${platformCut.toLocaleString()}`, color: '#f87171' },
+                { label: 'Your net earnings', value: `£${netEarnings.toLocaleString()}`, color: '#4ade80', bold: true },
+              ].map(r => (
+                <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: r.bold ? '0.88rem' : '0.8rem', borderTop: r.bold ? '1px solid rgba(255,255,255,0.07)' : 'none', paddingTop: r.bold ? '0.4rem' : '0' }}>
+                  <span style={{ color: '#64748b' }}>{r.label}</span>
+                  <span style={{ color: r.color, fontWeight: r.bold ? 800 : 600 }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {error && <div style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.75rem', background: 'rgba(239,68,68,0.1)', padding: '0.5rem 0.75rem', borderRadius: '0.4rem' }}>{error}</div>}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <button onClick={onClose} disabled={loading} style={{
+            flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            color: '#94a3b8', borderRadius: '0.5rem', padding: '0.7rem', fontSize: '0.85rem', cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={submit} disabled={loading || !salary || !feePct} style={{
+            flex: 2, background: loading ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)',
+            border: '1px solid rgba(34,197,94,0.4)', color: '#4ade80',
+            borderRadius: '0.5rem', padding: '0.7rem', fontSize: '0.85rem', fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}>
+            {loading ? 'Creating placement…' : `✓ Confirm Placement — £${netEarnings.toLocaleString()} earnings`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── AI Screening Call Modal ──────────────────────────────────────────────────
+function ScreeningModal({ match, onClose }: { match: Match; onClose: () => void }) {
+  const [simStep, setSimStep] = useState(0)
+  const steps = [
+    { icon: '🔍', label: 'Analysing match profile…', color: '#6366f1' },
+    { icon: '📋', label: 'Preparing tailored questions…', color: '#8b5cf6' },
+    { icon: '📞', label: 'Initiating AI video call…', color: '#3b82f6' },
+    { icon: '🤖', label: 'Screening in progress…', color: '#06b6d4' },
+    { icon: '📊', label: 'Scoring responses…', color: '#f59e0b' },
+    { icon: '✅', label: 'Generating recommendation…', color: '#22c55e' },
+  ]
+
+  const existing = match.screening_calls[0]
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.80)', zIndex: 200,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: '460px',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+      }}>
+        <div style={{ textAlign: 'center' as const, marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎙</div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Screening Call</div>
+          <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.2rem' }}>
+            {match.candidate.first_name} {match.candidate.last_name} → {match.job.title}
+          </div>
+        </div>
+
+        {existing ? (
+          // Already screened — show result
+          <div>
+            <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '0.6rem', padding: '1rem', textAlign: 'center' as const, marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Screening Completed</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: RECOMMEND_COLOR[existing.recommendation ?? ''] ?? '#94a3b8' }}>
+                {existing.recommendation?.replace(/_/g, ' ') ?? 'Reviewed'}
+              </div>
+            </div>
+            <a href="/screening" style={{
+              display: 'block', textAlign: 'center' as const, background: 'rgba(99,102,241,0.15)',
+              border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc',
+              borderRadius: '0.5rem', padding: '0.7rem', fontSize: '0.85rem', fontWeight: 700,
+              textDecoration: 'none', marginBottom: '0.75rem',
+            }}>
+              View Full Screening Report →
+            </a>
+            <button onClick={onClose} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#475569', borderRadius: '0.4rem', padding: '0.6rem', fontSize: '0.82rem', cursor: 'pointer' }}>
+              Close
+            </button>
+          </div>
+        ) : (
+          // Not yet screened — simulate call initiation
+          <div>
+            {simStep === 0 ? (
+              <div>
+                <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center' as const, marginBottom: '1.5rem' }}>
+                  The AI assistant will conduct a 25–35 minute structured video call, score responses, and deliver a recommendation to your dashboard.
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                  {[
+                    '📋 Role-specific technical & competency questions',
+                    '💰 Salary expectation & notice period confirmation',
+                    '🤔 Motivation and cultural alignment probing',
+                    '⚠️ Key concern flagging with severity scores',
+                    '📊 Auto-generated recommendation + transcript',
+                  ].map(item => (
+                    <div key={item} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    setSimStep(1)
+                    let s = 1
+                    const interval = setInterval(() => {
+                      s += 1; setSimStep(s)
+                      if (s >= steps.length) clearInterval(interval)
+                    }, 800)
+                  }}
+                  style={{
+                    width: '100%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)',
+                    color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.85rem',
+                    fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
+                  }}>
+                  🚀 Start AI Screening Call
+                </button>
+                <button onClick={onClose} style={{ width: '100%', background: 'transparent', border: 'none', color: '#475569', padding: '0.6rem', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.4rem' }}>Cancel</button>
+              </div>
+            ) : simStep < steps.length ? (
+              // Animated progress
+              <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
+                  {steps.map((step, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      opacity: i < simStep ? 1 : i === simStep ? 0.7 : 0.2,
+                      transition: 'opacity 0.3s',
+                    }}>
+                      <span style={{ fontSize: '1.1rem' }}>{step.icon}</span>
+                      <span style={{ fontSize: '0.82rem', color: i < simStep ? '#4ade80' : step.color }}>
+                        {step.label}
+                      </span>
+                      {i < simStep && <span style={{ marginLeft: 'auto', color: '#4ade80', fontSize: '0.75rem' }}>✓</span>}
+                      {i === simStep && (
+                        <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: step.color }}>●</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '0.4rem', height: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #22c55e)', width: `${(simStep / steps.length) * 100}%`, transition: 'width 0.6s ease' }} />
+                </div>
+              </div>
+            ) : (
+              // Done
+              <div style={{ textAlign: 'center' as const }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
+                <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.4rem' }}>Screening Queued!</div>
+                <div style={{ color: '#64748b', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
+                  The AI will call {match.candidate.first_name} within the next few minutes. Results appear in Screening once complete.
+                </div>
+                <a href="/screening" style={{
+                  display: 'block', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)',
+                  color: '#4ade80', borderRadius: '0.5rem', padding: '0.7rem',
+                  fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none', marginBottom: '0.6rem',
+                }}>
+                  View Screening Dashboard →
+                </a>
+                <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#475569', fontSize: '0.8rem', cursor: 'pointer' }}>Close</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Table ───────────────────────────────────────────────────────────────
+export default function PipelineTable({ matches }: { matches: Match[] }) {
+  const router = useRouter()
+  const [placementMatch, setPlacementMatch] = useState<Match | null>(null)
+  const [screeningMatch, setScreeningMatch] = useState<Match | null>(null)
+  const [filter, setFilter] = useState('ALL')
+
+  const statusOrder = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED', 'INTERVIEWING', 'OFFERED', 'PLACED', 'REJECTED']
+  const filterOptions = ['ALL', ...statusOrder.filter(s => matches.some(m => m.status === s))]
+
+  const displayed = filter === 'ALL' ? matches : matches.filter(m => m.status === filter)
+
+  return (
+    <>
+      {/* Filter tabs */}
+      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        {filterOptions.map(f => {
+          const count = f === 'ALL' ? matches.length : matches.filter(m => m.status === f).length
+          const active = filter === f
+          return (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              background: active ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)'}`,
+              color: active ? '#a5b4fc' : '#64748b',
+              borderRadius: '0.4rem', padding: '0.3rem 0.8rem',
+              fontSize: '0.78rem', fontWeight: active ? 700 : 400, cursor: 'pointer',
+            }}>
+              {f.replace(/_/g, ' ')}
+              <span style={{ marginLeft: '0.4rem', opacity: 0.7 }}>({count})</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Table */}
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+        {/* Table header */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1.8fr 1.8fr 80px 100px 120px 1fr',
+          gap: '0', padding: '0.7rem 1.25rem',
+          background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)',
+          fontSize: '0.7rem', color: '#475569', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+        }}>
+          <span>Candidate</span><span>Role</span><span>Score</span><span>Status</span><span>Screening</span><span style={{ textAlign: 'right' as const }}>Actions</span>
+        </div>
+
+        {displayed.length === 0 ? (
+          <div style={{ padding: '3rem', textAlign: 'center' as const, color: '#475569' }}>No matches in this stage.</div>
+        ) : (
+          displayed.map((m, idx) => {
+            const hasScreen = m.screening_calls.length > 0
+            const screen = m.screening_calls[0]
+            const isPlaced = m.status === 'PLACED'
+            const canScreen = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED'].includes(m.status)
+            const canPlace = ['SHORTLISTED', 'INTERVIEWING', 'OFFERED'].includes(m.status) && !isPlaced
+
+            return (
+              <div key={m.id} style={{
+                display: 'grid', gridTemplateColumns: '1.8fr 1.8fr 80px 100px 120px 1fr',
+                gap: '0', padding: '1rem 1.25rem', alignItems: 'center',
+                borderBottom: idx < displayed.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                background: isPlaced ? 'rgba(34,197,94,0.03)' : 'transparent',
+              }}>
+                {/* Candidate */}
+                <div>
+                  <a href={`/candidates/${m.candidate.id}`} style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f1f5f9', textDecoration: 'none' }}>
+                    {m.candidate.first_name} {m.candidate.last_name}
+                  </a>
+                  <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.1rem' }}>{m.candidate.current_title}</div>
+                  <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
+                    {m.candidate.skills.slice(0, 2).map(s => (
+                      <span key={s.skill.name} style={{ background: 'rgba(99,102,241,0.1)', color: '#7c87d6', borderRadius: '0.2rem', padding: '0.05rem 0.35rem', fontSize: '0.65rem' }}>
+                        {s.skill.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Job */}
+                <div>
+                  <a href={`/jobs/${m.job.id}`} style={{ fontWeight: 600, fontSize: '0.85rem', color: '#cbd5e1', textDecoration: 'none' }}>
+                    {m.job.title}
+                  </a>
+                  <div style={{ color: '#475569', fontSize: '0.75rem', marginTop: '0.1rem' }}>
+                    {m.job.company?.name} · {m.job.company?.industry}
+                  </div>
+                </div>
+
+                {/* Score */}
+                <div><ScoreBar score={m.overall_score} /></div>
+
+                {/* Status */}
+                <div><StatusBadge status={m.status} /></div>
+
+                {/* Screening result */}
+                <div>
+                  {hasScreen ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <span style={{ fontSize: '0.7rem', color: RECOMMEND_COLOR[screen?.recommendation ?? ''] ?? '#64748b', fontWeight: 700 }}>
+                        {screen?.recommendation?.replace(/_/g, ' ') ?? '—'}
+                      </span>
+                      <span style={{ fontSize: '0.65rem', color: '#334155' }}>Screened</span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: '#334155' }}>—</span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                  {canScreen && (
+                    <button
+                      onClick={() => setScreeningMatch(m)}
+                      style={{
+                        background: hasScreen ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.18)',
+                        border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc',
+                        borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
+                        fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const,
+                      }}>
+                      {hasScreen ? '🎙 Review Call' : '🎙 Run AI Call'}
+                    </button>
+                  )}
+
+                  {canPlace && (
+                    <button
+                      onClick={() => setPlacementMatch(m)}
+                      style={{
+                        background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)',
+                        color: '#4ade80', borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
+                        fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const,
+                      }}>
+                      💼 Convert to Placement
+                    </button>
+                  )}
+
+                  {isPlaced && m.placement && (
+                    <a href={`/placements/${m.placement.id}`} style={{
+                      background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)',
+                      color: '#fbbf24', borderRadius: '0.35rem', padding: '0.3rem 0.7rem',
+                      fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const,
+                    }}>
+                      💰 £{Math.round(Number(m.placement.recruiter_earnings)).toLocaleString()} earned
+                    </a>
+                  )}
+
+                  <a href={`/matches/${m.id}`} style={{
+                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                    color: '#475569', borderRadius: '0.35rem', padding: '0.3rem 0.5rem',
+                    fontSize: '0.72rem', textDecoration: 'none',
+                  }}>
+                    ›
+                  </a>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* Modals */}
+      {placementMatch && (
+        <PlacementModal
+          match={placementMatch}
+          onClose={() => setPlacementMatch(null)}
+          onSuccess={() => { setPlacementMatch(null); router.push('/placements') }}
+        />
+      )}
+
+      {screeningMatch && (
+        <ScreeningModal
+          match={screeningMatch}
+          onClose={() => setScreeningMatch(null)}
+        />
+      )}
+    </>
+  )
+}
