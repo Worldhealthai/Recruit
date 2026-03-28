@@ -76,6 +76,11 @@ function PlacementModal({ match, onClose, onSuccess }: {
   const submit = async () => {
     setLoading(true); setError('')
     try {
+      const salaryNum = Math.round(Number(salary))
+      const feePctNum = Number(feePct)  // send as whole number (e.g. 20); API normalises
+      if (!salaryNum || salaryNum <= 0) { setError('Please enter a valid salary'); setLoading(false); return }
+      if (!feePctNum || feePctNum <= 0 || feePctNum > 50) { setError('Fee % must be between 1 and 50'); setLoading(false); return }
+
       const res = await fetch('/api/placements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,8 +88,8 @@ function PlacementModal({ match, onClose, onSuccess }: {
           matchId: match.id,
           candidateId: match.candidate.id,
           jobId: match.job.id,
-          agreedSalary: Number(salary),
-          feePercentage: Number(feePct) / 100,
+          agreedSalary: salaryNum,
+          feePercentage: feePctNum,  // whole number — API normalises
           feeType,
           startDate,
         }),
