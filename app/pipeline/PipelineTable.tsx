@@ -215,18 +215,53 @@ function PlacementModal({ match, onClose, onSuccess }: {
 }
 
 // ─── AI Screening Call Modal ──────────────────────────────────────────────────
-function ScreeningModal({ match, onClose }: { match: Match; onClose: () => void }) {
+function ScreeningModal({ match, onClose, onScreened }: {
+  match: Match; onClose: () => void; onScreened: () => void
+}) {
   const [simStep, setSimStep] = useState(0)
+  const [apiError, setApiError] = useState('')
+  const [result, setResult] = useState<{ recommendation: string } | null>(null)
+
   const steps = [
-    { icon: '🔍', label: 'Analysing match profile…', color: '#6366f1' },
-    { icon: '📋', label: 'Preparing tailored questions…', color: '#8b5cf6' },
-    { icon: '📞', label: 'Initiating AI video call…', color: '#3b82f6' },
-    { icon: '🤖', label: 'Screening in progress…', color: '#06b6d4' },
-    { icon: '📊', label: 'Scoring responses…', color: '#f59e0b' },
-    { icon: '✅', label: 'Generating recommendation…', color: '#22c55e' },
+    { icon: '🔍', label: 'Analysing match profile…',        color: '#6366f1' },
+    { icon: '📋', label: 'Preparing tailored questions…',   color: '#8b5cf6' },
+    { icon: '📞', label: 'Initiating AI video call…',       color: '#3b82f6' },
+    { icon: '🤖', label: 'Screening in progress…',          color: '#06b6d4' },
+    { icon: '📊', label: 'Scoring responses…',              color: '#f59e0b' },
+    { icon: '✅', label: 'Generating recommendation…',      color: '#22c55e' },
   ]
 
   const existing = match.screening_calls[0]
+
+  const startCall = async () => {
+    setSimStep(1)
+    setApiError('')
+
+    // Animate steps while API runs in parallel
+    let s = 1
+    const interval = setInterval(() => {
+      s = Math.min(s + 1, steps.length - 1)
+      setSimStep(s)
+    }, 700)
+
+    try {
+      const res = await fetch('/api/screening', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchId: match.id }),
+      })
+      const data = await res.json()
+      clearInterval(interval)
+      if (!res.ok) { setApiError(data.error ?? 'Screening failed'); setSimStep(0); return }
+      setSimStep(steps.length)
+      setResult({ recommendation: data.recommendation })
+      onScreened()  // refresh parent
+    } catch (e) {
+      clearInterval(interval)
+      setApiError(e instanceof Error ? e.message : 'Network error')
+      setSimStep(0)
+    }
+  }
 
   return (
     <div style={{
@@ -247,7 +282,7 @@ function ScreeningModal({ match, onClose }: { match: Match; onClose: () => void 
         </div>
 
         {existing ? (
-          // Already screened — show result
+          // Already screened — show result summary
           <div>
             <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '0.6rem', padding: '1rem', textAlign: 'center' as const, marginBottom: '1.25rem' }}>
               <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Screening Completed</div>
@@ -267,88 +302,66 @@ function ScreeningModal({ match, onClose }: { match: Match; onClose: () => void 
               Close
             </button>
           </div>
-        ) : (
-          // Not yet screened — simulate call initiation
+        ) : simStep === 0 ? (
+          // Pre-call confirmation screen
           <div>
-            {simStep === 0 ? (
-              <div>
-                <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center' as const, marginBottom: '1.5rem' }}>
-                  The AI assistant will conduct a 25–35 minute structured video call, score responses, and deliver a recommendation to your dashboard.
+            <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center' as const, marginBottom: '1.5rem' }}>
+              The AI will conduct a structured 25–35 minute video call, score every response, flag concerns, and deliver a hiring recommendation — instantly saved to your Screening dashboard.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              {['📋 Role-specific competency questions', '💰 Salary & notice confirmation', '🤔 Motivation & cultural fit probing', '⚠️ Key concern flagging', '📊 Scored transcript + recommendation'].map(item => (
+                <div key={item} style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{item}</div>
+              ))}
+            </div>
+            {apiError && <div style={{ color: '#f87171', fontSize: '0.78rem', marginBottom: '0.75rem', background: 'rgba(239,68,68,0.1)', padding: '0.5rem 0.75rem', borderRadius: '0.4rem' }}>{apiError}</div>}
+            <button onClick={startCall} style={{
+              width: '100%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)',
+              color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.85rem',
+              fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
+            }}>
+              🚀 Start AI Screening Call
+            </button>
+            <button onClick={onClose} style={{ width: '100%', background: 'transparent', border: 'none', color: '#475569', padding: '0.6rem', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.4rem' }}>Cancel</button>
+          </div>
+        ) : simStep < steps.length ? (
+          // Animated progress (API running in background)
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
+              {steps.map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: i < simStep ? 1 : i === simStep ? 0.8 : 0.2, transition: 'opacity 0.3s' }}>
+                  <span style={{ fontSize: '1.1rem' }}>{step.icon}</span>
+                  <span style={{ fontSize: '0.82rem', color: i < simStep ? '#4ade80' : step.color }}>{step.label}</span>
+                  {i < simStep && <span style={{ marginLeft: 'auto', color: '#4ade80', fontSize: '0.75rem' }}>✓</span>}
+                  {i === simStep && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: step.color }}>●</span>}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                  {[
-                    '📋 Role-specific technical & competency questions',
-                    '💰 Salary expectation & notice period confirmation',
-                    '🤔 Motivation and cultural alignment probing',
-                    '⚠️ Key concern flagging with severity scores',
-                    '📊 Auto-generated recommendation + transcript',
-                  ].map(item => (
-                    <div key={item} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => {
-                    setSimStep(1)
-                    let s = 1
-                    const interval = setInterval(() => {
-                      s += 1; setSimStep(s)
-                      if (s >= steps.length) clearInterval(interval)
-                    }, 800)
-                  }}
-                  style={{
-                    width: '100%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)',
-                    color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.85rem',
-                    fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
-                  }}>
-                  🚀 Start AI Screening Call
-                </button>
-                <button onClick={onClose} style={{ width: '100%', background: 'transparent', border: 'none', color: '#475569', padding: '0.6rem', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.4rem' }}>Cancel</button>
-              </div>
-            ) : simStep < steps.length ? (
-              // Animated progress
-              <div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
-                  {steps.map((step, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem',
-                      opacity: i < simStep ? 1 : i === simStep ? 0.7 : 0.2,
-                      transition: 'opacity 0.3s',
-                    }}>
-                      <span style={{ fontSize: '1.1rem' }}>{step.icon}</span>
-                      <span style={{ fontSize: '0.82rem', color: i < simStep ? '#4ade80' : step.color }}>
-                        {step.label}
-                      </span>
-                      {i < simStep && <span style={{ marginLeft: 'auto', color: '#4ade80', fontSize: '0.75rem' }}>✓</span>}
-                      {i === simStep && (
-                        <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: step.color }}>●</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '0.4rem', height: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #22c55e)', width: `${(simStep / steps.length) * 100}%`, transition: 'width 0.6s ease' }} />
-                </div>
-              </div>
-            ) : (
-              // Done
-              <div style={{ textAlign: 'center' as const }}>
-                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
-                <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.4rem' }}>Screening Queued!</div>
-                <div style={{ color: '#64748b', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
-                  The AI will call {match.candidate.first_name} within the next few minutes. Results appear in Screening once complete.
-                </div>
-                <a href="/screening" style={{
-                  display: 'block', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)',
-                  color: '#4ade80', borderRadius: '0.5rem', padding: '0.7rem',
-                  fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none', marginBottom: '0.6rem',
-                }}>
-                  View Screening Dashboard →
-                </a>
-                <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#475569', fontSize: '0.8rem', cursor: 'pointer' }}>Close</button>
+              ))}
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '0.4rem', height: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #22c55e)', width: `${(simStep / steps.length) * 100}%`, transition: 'width 0.5s ease' }} />
+            </div>
+            <div style={{ color: '#334155', fontSize: '0.72rem', marginTop: '0.5rem', textAlign: 'center' as const }}>Running call & saving to database…</div>
+          </div>
+        ) : (
+          // Complete — show result and link to screening page
+          <div style={{ textAlign: 'center' as const }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.3rem' }}>Screening Complete!</div>
+            {result && (
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: RECOMMEND_COLOR[result.recommendation] ?? '#94a3b8', marginBottom: '0.8rem' }}>
+                {result.recommendation.replace(/_/g, ' ')}
               </div>
             )}
+            <div style={{ color: '#64748b', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
+              Full transcript, scored Q&amp;A, and recommendation are now live in your Screening dashboard.
+            </div>
+            <a href="/screening" style={{
+              display: 'block', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)',
+              color: '#4ade80', borderRadius: '0.5rem', padding: '0.7rem',
+              fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none', marginBottom: '0.6rem',
+            }}>
+              View Screening Report →
+            </a>
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#475569', fontSize: '0.8rem', cursor: 'pointer' }}>Close</button>
           </div>
         )}
       </div>
@@ -529,6 +542,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
         <ScreeningModal
           match={screeningMatch}
           onClose={() => setScreeningMatch(null)}
+          onScreened={() => { router.refresh() }}
         />
       )}
     </>
