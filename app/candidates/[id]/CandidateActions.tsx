@@ -17,8 +17,27 @@ type MatchWithJob = {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  SUGGESTED: '#64748b', CONTACTED: '#3b82f6', SHORTLISTED: '#8b5cf6',
-  INTERVIEWING: '#f59e0b', OFFERED: '#f97316', PLACED: '#22c55e', REJECTED: '#ef4444',
+  CONTACTED: '#3b82f6',
+  INTERVIEWING: '#f59e0b',
+  OFFERED: '#f97316',
+  PLACED: '#22c55e',
+  REJECTED: '#ef4444',
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  CONTACTED:    'Contacted',
+  INTERVIEWING: 'Interviewing',
+  OFFERED:      'Offer Made',
+  PLACED:       'Placed',
+  REJECTED:     'Rejected',
+  // legacy statuses mapped gracefully
+  SUGGESTED:    'In Pipeline',
+  SHORTLISTED:  'Contacted',
+  SCREENING:    'Screening',
+  SUBMITTED:    'Submitted',
+  INTERVIEW:    'Interviewing',
+  OFFER:        'Offer Made',
+  WITHDRAWN:    'Withdrawn',
 }
 
 const RECOMMEND_COLOR: Record<string, string> = {
@@ -36,7 +55,7 @@ function ScreeningModal({ match, onClose, onDone }: {
   const steps = [
     { label: 'Analysing match profile',      color: '#6366f1' },
     { label: 'Preparing tailored questions', color: '#8b5cf6' },
-    { label: 'Initiating AI video call',     color: '#3b82f6' },
+    { label: 'Initiating AI phone call',     color: '#3b82f6' },
     { label: 'Screening in progress',        color: '#06b6d4' },
     { label: 'Scoring responses',            color: '#f59e0b' },
     { label: 'Generating recommendation',    color: '#22c55e' },
@@ -68,11 +87,11 @@ function ScreeningModal({ match, onClose, onDone }: {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: '440px', boxShadow: '0 25px 60px rgba(0,0,0,0.7)' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI Phone Screen</div>
-          <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.25rem' }}>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.25rem' }}>AI Phone Screen</div>
+          <div style={{ color: '#64748b', fontSize: '0.82rem' }}>
             {match.job.title} · {match.job.company?.name}
           </div>
         </div>
@@ -80,8 +99,8 @@ function ScreeningModal({ match, onClose, onDone }: {
         {existing ? (
           <div>
             <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '0.6rem', padding: '1rem', textAlign: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Already Screened</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: RECOMMEND_COLOR[existing.recommendation ?? ''] ?? '#94a3b8' }}>
+              <div style={{ fontSize: '0.7rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Already Screened</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: RECOMMEND_COLOR[existing.recommendation ?? ''] ?? '#94a3b8' }}>
                 {existing.recommendation?.replace(/_/g, ' ') ?? 'Reviewed'}
               </div>
             </div>
@@ -93,10 +112,10 @@ function ScreeningModal({ match, onClose, onDone }: {
         ) : step === 0 ? (
           <div>
             <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-              The AI will conduct a structured phone call, score every response, flag concerns, and deliver a hiring recommendation.
+              The AI will conduct a structured phone call, score every response, flag concerns, and deliver a clear hiring recommendation.
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1.5rem' }}>
-              {['Role-specific competency questions', 'Salary & notice confirmation', 'Motivation & cultural fit probing', 'Key concerns flagged', 'Scored transcript + recommendation'].map(item => (
+              {['Role-specific competency questions', 'Salary & notice confirmation', 'Motivation & cultural fit probing', 'Key concerns flagged automatically', 'Scored transcript + hire recommendation'].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
                   <span style={{ width: '5px', height: '5px', background: '#6366f1', borderRadius: '50%', flexShrink: 0, display: 'inline-block' }} />
                   {item}
@@ -104,7 +123,7 @@ function ScreeningModal({ match, onClose, onDone }: {
               ))}
             </div>
             {error && <div style={{ color: '#f87171', fontSize: '0.78rem', marginBottom: '0.75rem', background: 'rgba(239,68,68,0.1)', padding: '0.5rem 0.75rem', borderRadius: '0.4rem' }}>{error}</div>}
-            <button onClick={startCall} style={{ width: '100%', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.85rem', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={startCall} style={{ width: '100%', background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.4)', color: '#a5b4fc', borderRadius: '0.5rem', padding: '0.9rem', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}>
               Start AI Screening Call
             </button>
             <button onClick={onClose} style={{ width: '100%', background: 'transparent', border: 'none', color: '#475569', padding: '0.6rem', fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.4rem' }}>Cancel</button>
@@ -129,7 +148,7 @@ function ScreeningModal({ match, onClose, onDone }: {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 800, fontSize: '1rem', color: '#4ade80', marginBottom: '0.4rem' }}>Screening Complete</div>
             {result && (
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: RECOMMEND_COLOR[result] ?? '#94a3b8', marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '1.35rem', fontWeight: 900, color: RECOMMEND_COLOR[result] ?? '#94a3b8', marginBottom: '0.75rem' }}>
                 {result.replace(/_/g, ' ')}
               </div>
             )}
@@ -156,6 +175,9 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
   const { status } = match
   const hasScreen = match.screening_calls.length > 0
 
+  // Normalise legacy statuses to current flow
+  const normStatus = status === 'SUGGESTED' || status === 'SHORTLISTED' ? 'CONTACTED' : status
+
   const advance = async (newStatus: string) => {
     setLoading(true)
     await fetch(`/api/matches/${match.id}`, {
@@ -168,56 +190,36 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
   }
 
   const btnBase: React.CSSProperties = {
-    borderRadius: '0.35rem', padding: '0.28rem 0.7rem',
+    borderRadius: '0.35rem', padding: '0.3rem 0.75rem',
     fontSize: '0.75rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
     opacity: loading ? 0.6 : 1, border: '1px solid', whiteSpace: 'nowrap',
+    transition: 'opacity 0.15s ease',
   }
 
   return (
     <>
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
 
-        {/* ── Step 1: Suggest → Contact ── */}
-        {status === 'SUGGESTED' && (
-          <button onClick={() => advance('CONTACTED')} style={{ ...btnBase, background: 'rgba(59,130,246,0.18)', borderColor: 'rgba(59,130,246,0.45)', color: '#60a5fa', padding: '0.35rem 1rem' }}>
-            Mark as Contacted
-          </button>
-        )}
-
-        {/* ── Step 2: Contacted → run phone screen or shortlist ── */}
-        {status === 'CONTACTED' && (
+        {/* ── Contacted: run screen or advance to interview ── */}
+        {normStatus === 'CONTACTED' && (
           <>
             <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.18)', borderColor: 'rgba(99,102,241,0.45)', color: '#a5b4fc', padding: '0.35rem 1rem' }}>
-              Run AI Phone Screen
+              Run AI Screen
             </button>
-            <button onClick={() => advance('SHORTLISTED')} style={{ ...btnBase, background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.3)', color: '#a78bfa' }}>
-              Shortlist
-            </button>
-          </>
-        )}
-
-        {/* ── Step 3: Shortlisted → screen if not done, then interview ── */}
-        {status === 'SHORTLISTED' && (
-          <>
-            {!hasScreen && (
-              <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.4)', color: '#a5b4fc' }}>
-                Run AI Phone Screen
-              </button>
-            )}
-            {hasScreen && (
-              <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.25)', color: '#818cf8' }}>
-                Review Screening
-              </button>
-            )}
             <button onClick={() => advance('INTERVIEWING')} style={{ ...btnBase, background: 'rgba(245,158,11,0.15)', borderColor: 'rgba(245,158,11,0.4)', color: '#fbbf24', padding: '0.35rem 1rem' }}>
               Schedule Interview
             </button>
           </>
         )}
 
-        {/* ── Step 4: Interviewing → scorecard + offer ── */}
-        {status === 'INTERVIEWING' && (
+        {/* ── Interviewing → scorecard + offer ── */}
+        {normStatus === 'INTERVIEWING' && (
           <>
+            {hasScreen && (
+              <button onClick={() => setShowScreening(true)} style={{ ...btnBase, background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.25)', color: '#818cf8' }}>
+                Review Screening
+              </button>
+            )}
             <button onClick={() => setShowScorecard(true)} style={{ ...btnBase, background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.35)', color: '#fbbf24' }}>
               Interview Scorecard
             </button>
@@ -227,8 +229,8 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
           </>
         )}
 
-        {/* ── Step 5: Offered → view offer letter + place ── */}
-        {status === 'OFFERED' && (
+        {/* ── Offered → view offer letter + confirm placement ── */}
+        {normStatus === 'OFFERED' && (
           <>
             <button onClick={() => setShowOfferLetter(true)} style={{ ...btnBase, background: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.35)', color: '#fb923c' }}>
               View Offer Letter
@@ -240,21 +242,21 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
         )}
 
         {/* ── Placed: show earnings ── */}
-        {status === 'PLACED' && match.placement && (
+        {normStatus === 'PLACED' && match.placement && (
           <a href={`/placements/${match.placement.id}`} style={{ ...btnBase, background: 'rgba(251,191,36,0.1)', borderColor: 'rgba(251,191,36,0.25)', color: '#fbbf24', textDecoration: 'none', display: 'inline-block' }}>
             £{Math.round(Number(match.placement.recruiter_earnings)).toLocaleString()} earned — view
           </a>
         )}
 
         {/* ── Rejected: restore ── */}
-        {status === 'REJECTED' && (
+        {normStatus === 'REJECTED' && (
           <button onClick={() => advance('CONTACTED')} style={{ ...btnBase, background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.12)', color: '#64748b' }}>
-            Restore
+            Restore to Pipeline
           </button>
         )}
 
-        {/* Reject — available on any active stage */}
-        {!['PLACED', 'REJECTED'].includes(status) && (
+        {/* Reject — available on any active non-placed stage */}
+        {!['PLACED', 'REJECTED'].includes(normStatus) && (
           <button onClick={() => advance('REJECTED')} style={{ ...btnBase, background: 'transparent', borderColor: 'rgba(239,68,68,0.2)', color: '#475569' }}>
             Reject
           </button>
@@ -268,7 +270,6 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
           onDone={() => { setShowScreening(false); onRefresh() }}
         />
       )}
-
       {showScorecard && (
         <ScorecardModal
           candidateName={candidateName}
@@ -278,7 +279,6 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
           onSaved={() => { setShowScorecard(false); onRefresh() }}
         />
       )}
-
       {showOfferLetter && (
         <OfferLetterModal
           candidateName={candidateName}
@@ -293,21 +293,10 @@ function MatchActions({ match, candidateName, onRefresh }: { match: MatchWithJob
   )
 }
 
-// ─── Pipeline status label with next-step hint ───────────────────────────────
-const NEXT_STEP: Record<string, string> = {
-  SUGGESTED:    'Mark as contacted once you reach out',
-  CONTACTED:    'Run AI phone screen or shortlist directly',
-  SHORTLISTED:  'Run phone screen then schedule interview',
-  INTERVIEWING: 'Make offer when ready',
-  OFFERED:      'Go to pipeline to confirm placement',
-  PLACED:       'Placement confirmed',
-  REJECTED:     '',
-}
-
-// Stage priority for deduplication — higher index = further along
+// ─── Stage priority for deduplication ────────────────────────────────────────
 const STAGE_RANK: Record<string, number> = {
-  SUGGESTED: 0, CONTACTED: 1, SHORTLISTED: 2,
-  INTERVIEWING: 3, OFFERED: 4, PLACED: 5, REJECTED: -1,
+  SUGGESTED: 0, CONTACTED: 1, SHORTLISTED: 1,
+  INTERVIEWING: 2, OFFERED: 3, PLACED: 4, REJECTED: -1,
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
@@ -326,7 +315,7 @@ export default function CandidateActions({
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
 
-  const quickAdd = async (initialStatus: string) => {
+  const addToPipeline = async () => {
     if (!fallbackJobId) return
     setCreating(true); setCreateError('')
     try {
@@ -336,7 +325,7 @@ export default function CandidateActions({
         body: JSON.stringify({
           candidate: { connect: { id: candidateId } },
           job: { connect: { id: fallbackJobId } },
-          status: initialStatus,
+          status: 'CONTACTED',
           overall_score: 0.75,
         }),
       })
@@ -360,63 +349,94 @@ export default function CandidateActions({
     }, {})
   )
 
-  const refresh = async () => {
-    router.refresh()
-    // Optimistically re-fetch by just triggering a router refresh; the server
-    // component will re-query and pass new props on next render.
-  }
+  const refresh = () => router.refresh()
 
+  // ── Not yet in pipeline ────────────────────────────────────────────────────
   if (matches.length === 0) {
     return (
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.75rem', padding: '1.5rem' }}>
-        <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.4rem' }}>Not yet in pipeline</div>
-        <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
-          Add this candidate to your pipeline to start tracking their progress.
+      <div style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '0.875rem',
+        padding: '1.75rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+      }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.3rem', color: '#f1f5f9' }}>
+            Not yet in pipeline
+          </div>
+          <div style={{ color: '#475569', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Add this candidate to your pipeline to start tracking their progress toward a placement.
+          </div>
         </div>
-        {createError && <div style={{ color: '#f87171', fontSize: '0.78rem', marginBottom: '0.75rem' }}>{createError}</div>}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+
+        {createError && (
+          <div style={{ color: '#f87171', fontSize: '0.78rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '0.4rem', padding: '0.5rem 0.75rem' }}>
+            {createError}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
-            onClick={() => quickAdd('CONTACTED')}
+            onClick={addToPipeline}
             disabled={creating || !fallbackJobId}
-            style={{ background: 'rgba(59,130,246,0.18)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', borderRadius: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '0.82rem', fontWeight: 600, cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1 }}
+            style={{
+              background: 'rgba(99,102,241,0.18)',
+              border: '1px solid rgba(99,102,241,0.45)',
+              color: '#a5b4fc',
+              borderRadius: '0.5rem',
+              padding: '0.6rem 1.4rem',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              cursor: creating || !fallbackJobId ? 'not-allowed' : 'pointer',
+              opacity: creating ? 0.6 : 1,
+              transition: 'opacity 0.15s ease',
+            }}
           >
-            {creating ? 'Adding…' : 'Mark as Contacted'}
+            {creating ? 'Adding to pipeline…' : '+ Add to Pipeline'}
           </button>
-          <button
-            onClick={() => quickAdd('SHORTLISTED')}
-            disabled={creating || !fallbackJobId}
-            style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.35)', color: '#a78bfa', borderRadius: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '0.82rem', fontWeight: 600, cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1 }}
-          >
-            Shortlist
-          </button>
+
           {!fallbackJobId && (
-            <span style={{ color: '#334155', fontSize: '0.78rem', alignSelf: 'center' }}>
-              No active jobs found —{' '}
+            <span style={{ color: '#334155', fontSize: '0.8rem' }}>
+              No active jobs —{' '}
               <a href="/jobs" style={{ color: '#6366f1', textDecoration: 'none' }}>add a job first</a>
             </span>
           )}
+
+          <a
+            href="/pipeline"
+            style={{ color: '#475569', fontSize: '0.8rem', textDecoration: 'none' }}
+          >
+            View pipeline →
+          </a>
         </div>
       </div>
     )
   }
 
+  // ── Already in pipeline ────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
       {matches.map((m) => {
-        const statusColor = STATUS_COLOR[m.status] ?? '#64748b'
+        const displayStatus = STATUS_LABEL[m.status] ?? m.status.replace(/_/g, ' ')
+        const normStatus = m.status === 'SUGGESTED' || m.status === 'SHORTLISTED' ? 'CONTACTED' : m.status
+        const statusColor = STATUS_COLOR[normStatus] ?? '#64748b'
         const screen = m.screening_calls[0]
+        const isPlaced = normStatus === 'PLACED'
 
         return (
           <div key={m.id} style={{
-            background: m.status === 'PLACED' ? 'rgba(34,197,94,0.04)' : 'rgba(255,255,255,0.03)',
-            border: `1px solid ${m.status === 'PLACED' ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.07)'}`,
-            borderRadius: '0.6rem',
-            padding: '0.9rem 1.1rem',
+            background: isPlaced ? 'rgba(34,197,94,0.04)' : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${isPlaced ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '0.75rem',
+            padding: '1rem 1.25rem',
           }}>
-            {/* Top row: job info + status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: '180px' }}>
-                <a href={`/jobs/${m.job.id}`} style={{ fontWeight: 600, fontSize: '0.88rem', color: '#f1f5f9', textDecoration: 'none' }}>
+            {/* Top row: job + status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '160px' }}>
+                <a href={`/jobs/${m.job.id}`} style={{ fontWeight: 700, fontSize: '0.9rem', color: '#f1f5f9', textDecoration: 'none' }}>
                   {m.job.title}
                 </a>
                 <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.1rem' }}>
@@ -424,12 +444,15 @@ export default function CandidateActions({
                 </div>
               </div>
 
-              {/* Status badge */}
-              <span style={{ background: `${statusColor}1a`, color: statusColor, border: `1px solid ${statusColor}44`, borderRadius: '0.3rem', padding: '0.15rem 0.55rem', fontSize: '0.7rem', fontWeight: 700 }}>
-                {m.status.replace(/_/g, ' ')}
+              <span style={{
+                background: `${statusColor}1a`, color: statusColor,
+                border: `1px solid ${statusColor}44`,
+                borderRadius: '0.3rem', padding: '0.2rem 0.6rem',
+                fontSize: '0.72rem', fontWeight: 700,
+              }}>
+                {displayStatus}
               </span>
 
-              {/* Screening result if exists */}
               {screen?.recommendation && (
                 <span style={{ color: RECOMMEND_COLOR[screen.recommendation] ?? '#64748b', fontSize: '0.72rem', fontWeight: 700 }}>
                   {screen.recommendation.replace(/_/g, ' ')}
@@ -437,16 +460,17 @@ export default function CandidateActions({
               )}
             </div>
 
-            {/* Bottom row: hint + action buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.72rem', color: '#334155' }}>
-                {NEXT_STEP[m.status] ?? ''}
-              </span>
-              <MatchActions match={m} candidateName={candidateName} onRefresh={refresh} />
-            </div>
+            {/* Actions */}
+            <MatchActions match={{ ...m, status: normStatus }} candidateName={candidateName} onRefresh={refresh} />
           </div>
         )
       })}
+
+      <div style={{ paddingTop: '0.25rem' }}>
+        <a href="/pipeline" style={{ fontSize: '0.8rem', color: '#475569', textDecoration: 'none' }}>
+          Manage full pipeline →
+        </a>
+      </div>
     </div>
   )
 }

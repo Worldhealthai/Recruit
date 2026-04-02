@@ -18,8 +18,10 @@ type Match = {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  SUGGESTED: '#64748b', CONTACTED: '#3b82f6', SHORTLISTED: '#8b5cf6',
+  CONTACTED: '#3b82f6',
   INTERVIEWING: '#f59e0b', OFFERED: '#f97316', PLACED: '#22c55e', REJECTED: '#ef4444',
+  // legacy
+  SUGGESTED: '#64748b', SHORTLISTED: '#3b82f6',
 }
 
 const RECOMMEND_COLOR: Record<string, string> = {
@@ -362,9 +364,12 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
   const [screeningMatch, setScreeningMatch] = useState<Match | null>(null)
   const [filter, setFilter] = useState('ALL')
 
-  // SUGGESTED lives in /matches (AI suggestions). REJECTED is noise. Pipeline = active work.
-  const PIPELINE_STATUSES = ['CONTACTED', 'SHORTLISTED', 'INTERVIEWING', 'OFFERED', 'PLACED']
-  const pipelineMatches = matches.filter(m => PIPELINE_STATUSES.includes(m.status))
+  // Pipeline = active work only. SUGGESTED/SHORTLISTED are legacy, map to CONTACTED in UI.
+  const PIPELINE_STATUSES = ['CONTACTED', 'INTERVIEWING', 'OFFERED', 'PLACED']
+  // Include legacy SUGGESTED/SHORTLISTED as CONTACTED in the pipeline
+  const pipelineMatches = matches.filter(m =>
+    PIPELINE_STATUSES.includes(m.status) || m.status === 'SUGGESTED' || m.status === 'SHORTLISTED'
+  )
   const filterOptions = ['ALL', ...PIPELINE_STATUSES.filter(s => pipelineMatches.some(m => m.status === s))]
 
   const displayed = filter === 'ALL' ? pipelineMatches : pipelineMatches.filter(m => m.status === filter)
@@ -411,8 +416,8 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
             const hasScreen = m.screening_calls.length > 0
             const screen = m.screening_calls[0]
             const isPlaced = m.status === 'PLACED'
-            const canScreen = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED'].includes(m.status)
-            const canPlace = ['SHORTLISTED', 'INTERVIEWING', 'OFFERED'].includes(m.status) && !isPlaced
+            const canScreen = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED', 'INTERVIEWING'].includes(m.status)
+            const canPlace = ['SUGGESTED', 'CONTACTED', 'SHORTLISTED', 'INTERVIEWING', 'OFFERED'].includes(m.status) && !isPlaced
 
             return (
               <div key={m.id} style={{

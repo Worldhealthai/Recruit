@@ -43,8 +43,178 @@ a {
 
 /* Hover card — used on all list/detail cards */
 .hover-card {
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 .hover-card:hover {
   border-color: rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Landing page animations ─────────────────────────────────────────── */
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -40px) scale(1.06); }
+  66%       { transform: translate(-25px, 25px) scale(0.94); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-30px, 30px) scale(1.04); }
+  66%       { transform: translate(25px, -20px) scale(0.96); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(15px, -15px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.15); }
+  50%       { box-shadow: 0 0 50px rgba(99,102,241,0.35), 0 0 80px rgba(99,102,241,0.1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+  40%           { transform: scale(1); opacity: 1; }
+}
+
+@keyframes counter-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bar-fill {
+  from { width: 0; }
+  to   { width: var(--bar-width, 75%); }
+}
+
+/* ── Feature card hover effects ──────────────────────────────────────── */
+
+.feature-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+/* ── Nav link hover ──────────────────────────────────────────────────── */
+
+.nav-link {
+  transition: color 0.15s ease;
+}
+.nav-link:hover {
+  color: #f1f5f9 !important;
+}
+
+/* ── Button hover effects ────────────────────────────────────────────── */
+
+.btn-primary {
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+}
+
+.btn-secondary {
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Candidate card hover ────────────────────────────────────────────── */
+
+.candidate-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.candidate-card:hover {
+  border-color: rgba(99,102,241,0.45) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+/* ── Scroll-reveal (added via JS intersection observer) ──────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Shimmer gradient text ───────────────────────────────────────────── */
+
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #6366f1 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ── Stat number animation ───────────────────────────────────────────── */
+
+.stat-number {
+  animation: counter-in 0.6s ease both;
+}
+
+/* ── Testimonial card hover ──────────────────────────────────────────── */
+
+.testimonial-card {
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.testimonial-card:hover {
+  border-color: rgba(99,102,241,0.3) !important;
+  transform: translateY(-2px);
 }
