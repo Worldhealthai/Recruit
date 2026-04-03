@@ -1,26 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import DemoModal from './components/DemoModal'
 
-// ── Animated counter hook ─────────────────────────────────────────────────────
-function useCounter(target: number, duration = 1400, start = false) {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    if (!start) return
-    let startTime: number | null = null
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp
-      const progress = Math.min((timestamp - startTime) / duration, 1)
-      const ease = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.floor(ease * target))
-      if (progress < 1) requestAnimationFrame(step)
-    }
-    requestAnimationFrame(step)
-  }, [target, duration, start])
-  return count
-}
 
 const FEATURES = [
   {
@@ -128,18 +111,7 @@ export default function LandingPage() {
   const [submitted, setSubmitted] = useState(false)
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
-  const [statsVisible, setStatsVisible] = useState(false)
   const statsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = statsRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setStatsVisible(true); obs.disconnect() }
-    }, { threshold: 0.3 })
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -320,7 +292,7 @@ export default function LandingPage() {
           {TESTIMONIALS.map(t => (
             <div key={t.name} className="testimonial-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '1rem', padding: '1.85rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.75, flex: 1 }}>
-                <span style={{ color: t.color, fontSize: '1.4rem', lineHeight: 1, display: 'block', marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}>"</span>
+                <span style={{ color: t.color, fontSize: '1.4rem', lineHeight: 1, display: 'block', marginBottom: '0.5rem', fontFamily: 'Georgia, serif' }}>&ldquo;</span>
                 {t.quote}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -420,9 +392,9 @@ export default function LandingPage() {
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '2.25rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <span style={{ fontWeight: 800, fontSize: '1.05rem', letterSpacing: '-0.03em' }}>Recruit<span style={{ color: '#6366f1' }}>AI</span></span>
         <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap' }}>
-          {['#features', '#how-it-works', '#compare', '#contact'].map((href, i) => (
+          {[['#features','Features'],['#how-it-works','How it works'],['#compare','Compare'],['#contact','Contact']].map(([href, label]) => (
             <a key={href} href={href} className="nav-link" style={{ color: '#334155', fontSize: '0.82rem', textDecoration: 'none' }}>
-              {['Features', 'How it works', 'Compare', 'Contact'][i]}
+              {label}
             </a>
           ))}
         </div>
