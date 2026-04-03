@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import DemoModal from './components/DemoModal'
 
@@ -269,7 +269,7 @@ export default function LandingPage() {
             {/* Connecting line */}
             <div style={{ position: 'absolute', top: '2.1rem', left: 'calc(33.3% - 10px)', right: 'calc(33.3% - 10px)', height: '2px', background: 'linear-gradient(90deg, rgba(99,102,241,0.4), rgba(139,92,246,0.4))', zIndex: 0, pointerEvents: 'none' }} />
 
-            {HOW.map((step, i) => (
+            {HOW.map((step) => (
               <div key={step.n} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '2rem 1.75rem', position: 'relative', zIndex: 1 }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
                   <span style={{ fontWeight: 900, fontSize: '0.9rem', color: '#a5b4fc' }}>{step.n}</span>
