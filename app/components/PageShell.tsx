@@ -2,9 +2,9 @@ import Nav from './Nav'
 
 const pageStyles: React.CSSProperties = {
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-  color: '#f8fafc',
-  fontFamily: 'system-ui, -apple-system, sans-serif',
+  background: '#0c0c14',
+  color: '#f1f5f9',
+  fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
 
 export default function PageShell({
@@ -23,7 +23,7 @@ export default function PageShell({
   return (
     <div style={pageStyles}>
       <Nav active={active} />
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 2rem' }}>
+      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '2.5rem 2.5rem' }}>
         <header style={{ marginBottom: '2.5rem' }}>
           {badge && (
             <span style={{

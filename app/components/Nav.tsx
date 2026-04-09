@@ -20,7 +20,7 @@ export default function Nav({ active }: { active?: string }) {
       gap: '0',
       padding: '0.85rem 2.5rem',
       borderBottom: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(15,23,42,0.97)',
+      background: 'rgba(12,12,20,0.97)',
       position: 'sticky',
       top: 0,
       zIndex: 100,
