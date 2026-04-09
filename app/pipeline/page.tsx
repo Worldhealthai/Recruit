@@ -64,7 +64,7 @@ export default async function PipelinePage() {
   const { recruiter, matches, stats } = await getData()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f9fb', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'transparent', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <Nav active="/pipeline" />
 
       <main className="page-content" style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 2.5rem' }}>
@@ -112,9 +112,12 @@ export default async function PipelinePage() {
             { label: 'Total Placed',        value: stats.totalPlaced.toString(), sub: 'placements',       accent: '#6366f1' },
           ].map(s => (
             <div key={s.label} style={{
-              background: '#ffffff', border: '1px solid rgba(0,0,0,0.07)',
+              background: 'rgba(255,255,255,0.75)',
+              border: '1px solid rgba(255,255,255,0.6)',
               borderRadius: '12px', padding: '1rem 1.1rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              boxShadow: '0 2px 10px rgba(99,102,241,0.07)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
             }}>
               <div style={{ fontSize: '0.68rem', color: '#9ca3af', marginBottom: '0.3rem', textTransform: 'uppercase' as const, letterSpacing: '0.06em', fontWeight: 600 }}>{s.label}</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111111', letterSpacing: '-0.03em' }}>{s.value}</div>

@@ -68,13 +68,16 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
   }, {})
 
   const card: React.CSSProperties = {
-    background: '#ffffff', border: '1px solid rgba(0,0,0,0.07)',
+    background: 'rgba(255,255,255,0.82)',
+    border: '1px solid rgba(255,255,255,0.65)',
     borderRadius: '12px', padding: '1.5rem',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 2px 12px rgba(99,102,241,0.07), 0 1px 3px rgba(0,0,0,0.04)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f9fb', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'transparent', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <Nav active="/candidates" />
 
       <main className="page-content" style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 2.5rem' }}>

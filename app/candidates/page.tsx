@@ -125,12 +125,12 @@ export default async function CandidatesPage({
   const candidates = await getCandidates(searchParams)
 
   const statPill: React.CSSProperties = {
-    background: '#f3f4f6', borderRadius: '4px',
+    background: 'rgba(0,0,0,0.055)', borderRadius: '4px',
     padding: '0.1rem 0.42rem', fontSize: '0.7rem', color: '#6b7280',
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f9fb', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'transparent', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <Nav active="/candidates" />
 
       <div className="page-content" style={{ maxWidth: '1380px', margin: '0 auto', padding: '2rem 2.5rem' }}>
@@ -183,12 +183,14 @@ export default async function CandidatesPage({
                   return (
                     <Link key={c.id} href={`/candidates/${c.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                       <div className="candidate-card" style={{
-                        background: '#ffffff',
-                        border: '1px solid rgba(0,0,0,0.07)',
+                        background: 'rgba(255,255,255,0.82)',
+                        border: '1px solid rgba(255,255,255,0.65)',
                         borderRadius: '12px',
                         padding: '1rem 1.35rem',
                         cursor: 'pointer',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                        boxShadow: '0 2px 12px rgba(99,102,241,0.07), 0 1px 3px rgba(0,0,0,0.04)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
                       }}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
 
@@ -277,7 +279,7 @@ export default async function CandidatesPage({
                                   </span>
                                 )}
                                 {salMin != null && (
-                                  <span style={{ ...statPill, color: '#059669', background: '#f0fdf4' }}>
+                                  <span style={statPill}>
                                     £{salMin}k{salMax && salMax !== salMin ? `–£${salMax}k` : '+'}
                                   </span>
                                 )}
@@ -290,12 +292,12 @@ export default async function CandidatesPage({
                                   </span>
                                 )}
                                 {c.is_remote_open && (
-                                  <span style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
+                                  <span style={{ background: 'rgba(0,0,0,0.05)', color: '#374151', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
                                     Remote
                                   </span>
                                 )}
                                 {c.is_relocation_open && (
-                                  <span style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
+                                  <span style={{ background: 'rgba(0,0,0,0.05)', color: '#374151', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
                                     Relocation
                                   </span>
                                 )}

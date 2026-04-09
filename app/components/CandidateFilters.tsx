@@ -104,7 +104,7 @@ export const ALL_SKILLS = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: '#f9fafb',
+  background: 'rgba(0,0,0,0.04)',
   border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '6px',
   padding: '0.45rem 0.65rem',
@@ -115,7 +115,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 const miniInputStyle: React.CSSProperties = {
-  background: '#f9fafb',
+  background: 'rgba(0,0,0,0.04)',
   border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '5px',
   padding: '0.35rem 0.5rem',
@@ -127,7 +127,7 @@ const miniInputStyle: React.CSSProperties = {
 
 const selectStyle: React.CSSProperties = {
   width: '100%',
-  background: '#f9fafb',
+  background: 'rgba(0,0,0,0.04)',
   border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '6px',
   padding: '0.45rem 0.6rem',
@@ -308,15 +308,17 @@ export default function CandidateFilters() {
 
   return (
     <aside style={{
-      background: '#ffffff',
-      border: '1px solid rgba(0,0,0,0.07)',
+      background: 'rgba(255,255,255,0.80)',
+      border: '1px solid rgba(255,255,255,0.62)',
       borderRadius: '12px',
       padding: '1rem 1.1rem',
       position: 'sticky',
       top: '72px',
       maxHeight: 'calc(100vh - 96px)',
       overflowY: 'auto',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+      boxShadow: '0 2px 12px rgba(99,102,241,0.07)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
     }}>
       {/* Header */}
       <div style={{

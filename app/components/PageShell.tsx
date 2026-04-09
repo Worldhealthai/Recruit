@@ -2,7 +2,7 @@ import Nav from './Nav'
 
 const pageStyles: React.CSSProperties = {
   minHeight: '100vh',
-  background: '#f8f9fb',
+  background: 'transparent',
   color: '#111111',
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }

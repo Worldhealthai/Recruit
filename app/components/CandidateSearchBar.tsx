@@ -143,12 +143,14 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           style={{
             width: '100%', height: '52px',
             padding: '0 9rem 0 2.9rem',
-            background: '#ffffff',
-            border: '1px solid rgba(0,0,0,0.1)',
+            background: 'rgba(255,255,255,0.82)',
+            border: '1px solid rgba(255,255,255,0.65)',
             borderRadius: '0.75rem',
             color: '#111111', fontSize: '0.93rem',
             outline: 'none', boxSizing: 'border-box',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            boxShadow: '0 2px 12px rgba(99,102,241,0.07)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
           }}
         />
 

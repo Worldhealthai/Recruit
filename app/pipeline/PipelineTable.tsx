@@ -383,9 +383,12 @@ function PipelineCard({ match, onScreen, onPlace }: {
 
   return (
     <div className="pipeline-card" style={{
-      background: '#ffffff', border: '1px solid rgba(0,0,0,0.07)',
+      background: 'rgba(255,255,255,0.82)',
+      border: '1px solid rgba(255,255,255,0.65)',
       borderRadius: '12px', padding: '1.25rem 1.5rem',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      boxShadow: '0 2px 12px rgba(99,102,241,0.07), 0 1px 3px rgba(0,0,0,0.04)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
     }}>
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
 
