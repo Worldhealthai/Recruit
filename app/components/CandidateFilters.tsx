@@ -104,22 +104,22 @@ export const ALL_SKILLS = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(255,255,255,0.09)',
+  background: '#f9fafb',
+  border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '6px',
   padding: '0.45rem 0.65rem',
-  color: '#e2e8f0',
+  color: '#111111',
   fontSize: '0.8rem',
   outline: 'none',
   boxSizing: 'border-box',
 }
 
 const miniInputStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(255,255,255,0.09)',
+  background: '#f9fafb',
+  border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '5px',
   padding: '0.35rem 0.5rem',
-  color: '#e2e8f0',
+  color: '#111111',
   fontSize: '0.76rem',
   outline: 'none',
   boxSizing: 'border-box',
@@ -127,11 +127,11 @@ const miniInputStyle: React.CSSProperties = {
 
 const selectStyle: React.CSSProperties = {
   width: '100%',
-  background: '#14141c',
-  border: '1px solid rgba(255,255,255,0.09)',
+  background: '#f9fafb',
+  border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: '6px',
   padding: '0.45rem 0.6rem',
-  color: '#e2e8f0',
+  color: '#111111',
   fontSize: '0.8rem',
   outline: 'none',
   cursor: 'pointer',
@@ -139,7 +139,7 @@ const selectStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   fontSize: '0.66rem',
-  color: '#3d4a60',
+  color: '#9ca3af',
   fontWeight: 700,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
@@ -154,20 +154,20 @@ function FilterSection({ label, open, onToggle, count, children }: {
   count?: number; children: React.ReactNode
 }) {
   return (
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+    <div style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
       <button
         onClick={onToggle}
         style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           padding: '0.65rem 0', background: 'transparent', border: 'none', cursor: 'pointer',
-          color: '#94a3b8', fontSize: '0.78rem', fontWeight: 600, textAlign: 'left',
+          color: '#374151', fontSize: '0.78rem', fontWeight: 600, textAlign: 'left',
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
           {label}
           {count != null && count > 0 && (
             <span style={{
-              background: 'rgba(99,102,241,0.25)', color: '#a5b4fc',
+              background: '#111111', color: '#ffffff',
               borderRadius: '999px', padding: '0 0.4rem',
               fontSize: '0.6rem', fontWeight: 700,
             }}>
@@ -175,7 +175,7 @@ function FilterSection({ label, open, onToggle, count, children }: {
             </span>
           )}
         </span>
-        <span style={{ color: '#2d3748', fontSize: '0.75rem', fontWeight: 500 }}>
+        <span style={{ color: '#d1d5db', fontSize: '0.75rem', fontWeight: 500 }}>
           {open ? '−' : '+'}
         </span>
       </button>
@@ -196,7 +196,7 @@ function CheckPill({ label, checked, color, onChange }: {
         style={{ accentColor: '#6366f1', width: '13px', height: '13px', cursor: 'pointer', flexShrink: 0 }}
       />
       {color && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color, flexShrink: 0 }} />}
-      <span style={{ fontSize: '0.79rem', color: checked ? '#e2e8f0' : '#4b5a70' }}>{label}</span>
+      <span style={{ fontSize: '0.79rem', color: checked ? '#111111' : '#6b7280' }}>{label}</span>
     </label>
   )
 }
@@ -221,8 +221,8 @@ function SearchableChecklist({ items, selected, onToggle, placeholder }: {
           {selected.map(s => (
             <span key={s} onClick={() => onToggle(s)} style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-              background: 'rgba(99,102,241,0.15)', color: '#a5b4fc',
-              border: '1px solid rgba(99,102,241,0.3)', borderRadius: '999px',
+              background: '#111111', color: '#ffffff',
+              borderRadius: '999px',
               padding: '0.1rem 0.5rem', fontSize: '0.67rem', cursor: 'pointer',
             }}>
               {s} ×
@@ -232,7 +232,7 @@ function SearchableChecklist({ items, selected, onToggle, placeholder }: {
       )}
       <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
         {filtered.length === 0
-          ? <div style={{ color: '#3d4a60', fontSize: '0.75rem', padding: '0.35rem 0' }}>No results</div>
+          ? <div style={{ color: '#9ca3af', fontSize: '0.75rem', padding: '0.35rem 0' }}>No results</div>
           : filtered.map(item => (
             <CheckPill key={item} label={item}
               checked={selected.includes(item)}
@@ -308,29 +308,30 @@ export default function CandidateFilters() {
 
   return (
     <aside style={{
-      background: 'rgba(255,255,255,0.025)',
-      border: '1px solid rgba(255,255,255,0.07)',
+      background: '#ffffff',
+      border: '1px solid rgba(0,0,0,0.07)',
       borderRadius: '12px',
       padding: '1rem 1.1rem',
       position: 'sticky',
       top: '72px',
       maxHeight: 'calc(100vh - 96px)',
       overflowY: 'auto',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
     }}>
       {/* Header */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: '1rem', paddingBottom: '0.9rem',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
       }}>
-        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#3d4a60', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           Filters
         </span>
         {activeCount > 0 && (
           <button onClick={clearFilters} style={{
             background: 'none',
-            border: '1px solid rgba(255,255,255,0.09)',
-            color: '#4b5a70', borderRadius: '5px',
+            border: '1px solid rgba(0,0,0,0.12)',
+            color: '#6b7280', borderRadius: '5px',
             padding: '0.18rem 0.55rem', fontSize: '0.69rem', cursor: 'pointer',
           }}>
             Clear {activeCount}

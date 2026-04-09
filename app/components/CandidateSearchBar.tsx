@@ -58,9 +58,7 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
 
   const minExp = sp.get('min_exp')
   const maxExp = sp.get('max_exp')
-  if (minExp || maxExp) {
-    chips.push({ keys: ['min_exp', 'max_exp'], label: `${minExp || '0'}–${maxExp || '∞'}y exp` })
-  }
+  if (minExp || maxExp) chips.push({ keys: ['min_exp', 'max_exp'], label: `${minExp || '0'}–${maxExp || '∞'}y exp` })
 
   const maxNotice = sp.get('max_notice')
   if (maxNotice) chips.push({ keys: ['max_notice'], label: maxNotice === '0' ? 'Immediate' : `≤${maxNotice}d notice` })
@@ -81,15 +79,15 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
 
 const chipStyle: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-  background: 'rgba(99,102,241,0.12)', color: '#a5b4fc',
-  border: '1px solid rgba(99,102,241,0.22)', borderRadius: '999px',
-  padding: '0.22rem 0.5rem 0.22rem 0.7rem', fontSize: '0.73rem', fontWeight: 500,
+  background: '#111111', color: '#ffffff',
+  borderRadius: '999px',
+  padding: '0.22rem 0.5rem 0.22rem 0.75rem', fontSize: '0.73rem', fontWeight: 500,
   whiteSpace: 'nowrap',
 }
 
 const chipBtnStyle: React.CSSProperties = {
-  background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer',
-  padding: '0 0.15rem', fontSize: '1rem', lineHeight: 1, fontWeight: 400,
+  background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer',
+  padding: '0 0.15rem', fontSize: '1rem', lineHeight: 1,
 }
 
 export default function CandidateSearchBar({ totalResults }: { totalResults: number }) {
@@ -126,15 +124,13 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
 
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      {/* Main search input */}
       <div style={{ position: 'relative' }}>
         <div style={{
           position: 'absolute', left: '1.1rem', top: '50%', transform: 'translateY(-50%)',
-          color: '#3d4a60', pointerEvents: 'none', display: 'flex',
+          color: '#c0c8d4', pointerEvents: 'none', display: 'flex',
         }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
         </div>
 
@@ -147,28 +143,25 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           style={{
             width: '100%', height: '52px',
             padding: '0 9rem 0 2.9rem',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.09)',
+            background: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.1)',
             borderRadius: '0.75rem',
-            color: '#f1f5f9', fontSize: '0.92rem',
+            color: '#111111', fontSize: '0.93rem',
             outline: 'none', boxSizing: 'border-box',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         />
 
         <div style={{
           position: 'absolute', right: '1.1rem', top: '50%', transform: 'translateY(-50%)',
-          color: '#3d4a60', fontSize: '0.78rem', pointerEvents: 'none',
+          color: '#c0c8d4', fontSize: '0.78rem', pointerEvents: 'none',
         }}>
           {totalResults.toLocaleString()} candidates
         </div>
       </div>
 
-      {/* Active filter chips */}
       {hasAny && (
-        <div style={{
-          display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center',
-          marginTop: '0.7rem',
-        }}>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.7rem' }}>
           {value && (
             <span style={chipStyle}>
               &ldquo;{value}&rdquo;
@@ -184,9 +177,8 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           <button
             onClick={clearAll}
             style={{
-              background: 'none',
-              border: '1px solid rgba(255,255,255,0.09)',
-              color: '#4b5a70', borderRadius: '999px',
+              background: 'none', border: '1px solid rgba(0,0,0,0.15)',
+              color: '#6b7280', borderRadius: '999px',
               padding: '0.22rem 0.7rem', fontSize: '0.72rem', cursor: 'pointer',
             }}
           >
