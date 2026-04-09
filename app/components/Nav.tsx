@@ -4,14 +4,12 @@ import Link from 'next/link'
 import RecruiterBadge from './RecruiterBadge'
 
 const links = [
-  { href: '/pipeline',        label: 'Pipeline' },
-  { href: '/candidates',      label: 'Candidates' },
-  { href: '/jobs',            label: 'Jobs' },
-  { href: '/matches',         label: 'Matches' },
-  { href: '/screening',       label: 'Screening' },
-  { href: '/placements',      label: 'Placements' },
-  { href: '/market-insights', label: 'Market Insights' },
-  { href: '/analytics',      label: 'Analytics' },
+  { href: '/pipeline',   label: 'Pipeline' },
+  { href: '/candidates', label: 'Candidates' },
+  { href: '/jobs',       label: 'Jobs' },
+  { href: '/matches',    label: 'Matches' },
+  { href: '/screening',  label: 'Screening' },
+  { href: '/placements', label: 'Placements' },
 ]
 
 export default function Nav({ active }: { active?: string }) {
