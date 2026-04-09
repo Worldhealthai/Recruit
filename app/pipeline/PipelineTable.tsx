@@ -524,7 +524,7 @@ export default function PipelineTable({ matches }: { matches: Match[] }) {
     PIPELINE_STATUSES.includes(m.status) || m.status === 'SUGGESTED' || m.status === 'SHORTLISTED'
   )
   const filterOptions = ['ALL', ...PIPELINE_STATUSES.filter(s => pipelineMatches.some(m => m.status === s || ((m.status === 'SUGGESTED' || m.status === 'SHORTLISTED') && s === 'CONTACTED')))]
-  const uniqueFilters = [...new Set(filterOptions)]
+  const uniqueFilters = filterOptions.filter((v, i, a) => a.indexOf(v) === i)
 
   const displayed = filter === 'ALL' ? pipelineMatches : pipelineMatches.filter(m => {
     if (filter === 'CONTACTED') return ['CONTACTED', 'SUGGESTED', 'SHORTLISTED'].includes(m.status)
