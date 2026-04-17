@@ -102,8 +102,11 @@ export async function POST(req: NextRequest) {
           company = await prisma.company.create({
             data: {
               name: c.current_company,
+              domain: `${c.current_company.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
               industry: c.industry ?? jobFunction,
+              sector: c.industry ?? jobFunction,
               company_size: 'MID_MARKET',
+              headquarters_city: c.location_city ?? 'London',
               headquarters_country: 'United Kingdom',
               region: 'EMEA',
             },
