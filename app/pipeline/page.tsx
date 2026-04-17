@@ -3,6 +3,7 @@ import Nav from '../components/Nav'
 import { Suspense } from 'react'
 import PipelineTable from './PipelineTable'
 
+export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 async function getData() {
