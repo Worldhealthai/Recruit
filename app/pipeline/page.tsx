@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 async function getData() {
+  try {
   const [recruiter, matches] = await Promise.all([
-    prisma.recruiter.findFirst(),
+    prisma.recruiter.findFirst().catch(() => null),
     prisma.match.findMany({
       include: {
         candidate: {
@@ -40,7 +41,7 @@ async function getData() {
   const placements = await prisma.placement.findMany({
     where: recruiter ? { recruiter_id: recruiter.id } : {},
     select: { fee_total: true, recruiter_earnings: true, invoice_status: true },
-  })
+  }).catch(() => [])
 
   const totalBilled     = placements.reduce((s, p) => s + Number(p.fee_total), 0)
   const netEarnings     = placements.reduce((s, p) => s + Number(p.recruiter_earnings), 0)
@@ -55,6 +56,13 @@ async function getData() {
     recruiter,
     matches,
     stats: { totalBilled, netEarnings, paidEarnings, pendingPipeline, readyForScreen, awaitingAction, totalPlaced: placements.length },
+  }
+  } catch {
+    return {
+      recruiter: null,
+      matches: [],
+      stats: { totalBilled: 0, netEarnings: 0, paidEarnings: 0, pendingPipeline: 0, readyForScreen: 0, awaitingAction: 0, totalPlaced: 0 },
+    }
   }
 }
 
