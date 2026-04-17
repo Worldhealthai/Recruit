@@ -9,7 +9,7 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
   const chips: Chip[] = []
 
   const title = sp.get('title')
-  if (title) chips.push({ keys: ['title'], label: `Title: ${title}` })
+  if (title) chips.push({ keys: ['title'], label: `${title}` })
 
   const company = sp.get('company')
   if (company) chips.push({ keys: ['company'], label: `@ ${company}` })
@@ -23,7 +23,7 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
   const dep = sp.get('department')
   if (dep) {
     const list = dep.split(',').filter(Boolean)
-    chips.push({ keys: ['department'], label: list.length === 1 ? list[0] : `${list.length} departments` })
+    chips.push({ keys: ['department'], label: list.length === 1 ? list[0] : `${list.length} depts` })
   }
 
   const sen = sp.get('seniority')
@@ -48,13 +48,13 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
   if (country) chips.push({ keys: ['country'], label: country })
 
   const location = sp.get('location')
-  if (location) chips.push({ keys: ['location'], label: location })
+  if (location) chips.push({ keys: ['location'], label: `📍 ${location}` })
 
   const region = sp.get('region')
   if (region) chips.push({ keys: ['region'], label: region })
 
-  if (sp.get('remote') === '1') chips.push({ keys: ['remote'], label: 'Remote open' })
-  if (sp.get('relocation') === '1') chips.push({ keys: ['relocation'], label: 'Relocation open' })
+  if (sp.get('remote') === '1') chips.push({ keys: ['remote'], label: 'Remote' })
+  if (sp.get('relocation') === '1') chips.push({ keys: ['relocation'], label: 'Relocation' })
 
   const minExp = sp.get('min_exp')
   const maxExp = sp.get('max_exp')
@@ -95,6 +95,7 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [value, setValue] = useState(searchParams.get('q') ?? '')
+  const [aiParsing, setAiParsing] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function handleChange(v: string) {
@@ -106,6 +107,35 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
       else p.delete('q')
       router.push(`${pathname}?${p.toString()}`)
     }, 320)
+  }
+
+  async function handleAiParse() {
+    if (!value.trim() || aiParsing) return
+    setAiParsing(true)
+    try {
+      const res = await fetch('/api/ai-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: value }),
+      })
+      const filters = await res.json()
+      const p = new URLSearchParams()
+      // Map AI result fields to URL params, handle arrays
+      for (const [key, val] of Object.entries(filters)) {
+        if (val === undefined || val === null || val === '') continue
+        if (Array.isArray(val)) p.set(key, (val as string[]).join(','))
+        else p.set(key, String(val))
+      }
+      // Clear the text search if we got structured filters
+      if (Object.keys(filters).length > 0 && !filters.q) {
+        setValue('')
+      }
+      router.push(`${pathname}?${p.toString()}`)
+    } catch {
+      // silently fall back to plain search
+    } finally {
+      setAiParsing(false)
+    }
   }
 
   function removeChip(keys: string[]) {
@@ -125,6 +155,7 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
   return (
     <div style={{ marginBottom: '1.5rem' }}>
       <div style={{ position: 'relative' }}>
+        {/* Search icon */}
         <div style={{
           position: 'absolute', left: '1.1rem', top: '50%', transform: 'translateY(-50%)',
           color: '#c0c8d4', pointerEvents: 'none', display: 'flex',
@@ -138,11 +169,12 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           type="text"
           value={value}
           onChange={e => handleChange(e.target.value)}
-          placeholder="Search by name, job title, company or skills…"
+          onKeyDown={e => { if (e.key === 'Enter') handleAiParse() }}
+          placeholder='Try "senior sales executive London" or "BDM open to work"…'
           className="search-input"
           style={{
             width: '100%', height: '52px',
-            padding: '0 9rem 0 2.9rem',
+            padding: '0 13rem 0 2.9rem',
             background: 'rgba(255,255,255,0.82)',
             border: '1px solid rgba(255,255,255,0.65)',
             borderRadius: '0.75rem',
@@ -154,16 +186,60 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           }}
         />
 
+        {/* Right side: AI button + count */}
         <div style={{
-          position: 'absolute', right: '1.1rem', top: '50%', transform: 'translateY(-50%)',
-          color: '#c0c8d4', fontSize: '0.78rem', pointerEvents: 'none',
+          position: 'absolute', right: '0.65rem', top: '50%', transform: 'translateY(-50%)',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}>
-          {totalResults.toLocaleString()} candidates
+          {value.trim() && (
+            <button
+              onClick={handleAiParse}
+              disabled={aiParsing}
+              title="Let AI parse your query into smart filters"
+              style={{
+                background: aiParsing ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.1)',
+                border: '1px solid rgba(99,102,241,0.25)',
+                color: '#6366f1',
+                borderRadius: '6px', padding: '0.28rem 0.65rem',
+                fontSize: '0.72rem', fontWeight: 700, cursor: aiParsing ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {aiParsing ? (
+                <>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px solid #6366f1', borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                  Parsing…
+                </>
+              ) : (
+                <>✦ AI Search</>
+              )}
+            </button>
+          )}
+          <span style={{ color: '#c0c8d4', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+            {totalResults.toLocaleString()} candidates
+          </span>
         </div>
       </div>
 
+      {/* Hint when empty */}
+      {!hasAny && (
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          {['Sales Executive London', 'Senior BDM open to work', 'Finance Director 10+ years', 'Marketing Manager remote'].map(hint => (
+            <button key={hint} onClick={() => { setValue(hint); setTimeout(handleAiParse, 50) }} style={{
+              background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(0,0,0,0.08)',
+              color: '#6b7280', borderRadius: '999px', padding: '0.18rem 0.65rem',
+              fontSize: '0.72rem', cursor: 'pointer', backdropFilter: 'blur(8px)',
+            }}>
+              {hint}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Active filter chips */}
       {hasAny && (
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.7rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.6rem' }}>
           {value && (
             <span style={chipStyle}>
               &ldquo;{value}&rdquo;
@@ -179,7 +255,7 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           <button
             onClick={clearAll}
             style={{
-              background: 'none', border: '1px solid rgba(0,0,0,0.15)',
+              background: 'none', border: '1px solid rgba(0,0,0,0.12)',
               color: '#6b7280', borderRadius: '999px',
               padding: '0.22rem 0.7rem', fontSize: '0.72rem', cursor: 'pointer',
             }}
@@ -188,6 +264,8 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           </button>
         </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

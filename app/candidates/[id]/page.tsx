@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import Nav from '../../components/Nav'
 import CandidateActions from './CandidateActions'
 import CandidateNotes from './CandidateNotes'
+import CopyButton from './CopyButton'
+import SourceBadge from './SourceBadge'
 
 const availabilityMeta: Record<string, { color: string; label: string }> = {
   ACTIVELY_LOOKING: { color: '#22c55e', label: 'Actively Looking' },
@@ -253,16 +255,39 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
             )}
 
             <div style={card}>
-              <h2 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 700, color: '#111111' }}>Contact</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+              <h2 style={{ margin: '0 0 0.9rem', fontSize: '0.9rem', fontWeight: 700, color: '#111111' }}>Contact</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                 {candidate.email && (
-                  <div style={{ fontSize: '0.84rem', color: '#374151' }}>{candidate.email}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.68rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.1rem' }}>Email</div>
+                      <div style={{ fontSize: '0.84rem', color: '#374151', fontWeight: 500 }}>{candidate.email}</div>
+                    </div>
+                    <CopyButton text={candidate.email} />
+                  </div>
                 )}
-                <div style={{ fontSize: '0.84rem', color: '#6b7280' }}>
-                  {candidate.location_city}{candidate.location_country ? `, ${candidate.location_country}` : ''}
+                {candidate.phone && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.68rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.1rem' }}>Phone</div>
+                      <div style={{ fontSize: '0.84rem', color: '#374151', fontWeight: 500 }}>{candidate.phone}</div>
+                    </div>
+                    <a href={`tel:${candidate.phone}`} style={{ background: '#f3f4f6', border: 'none', color: '#374151', borderRadius: '6px', padding: '0.28rem 0.65rem', fontSize: '0.72rem', fontWeight: 600, textDecoration: 'none' }}>
+                      Call
+                    </a>
+                  </div>
+                )}
+                <div style={{ paddingTop: '0.35rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.1rem' }}>Location</div>
+                  <div style={{ fontSize: '0.84rem', color: '#6b7280' }}>
+                    {candidate.location_city}{candidate.location_country ? `, ${candidate.location_country}` : ''}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#9ca3af' }}>
-                  Source: {candidate.source.replace(/_/g, ' ')}
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Sourced from</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <SourceBadge source={candidate.source} profileUrl={candidate.source_profile_url} />
+                  </div>
                 </div>
               </div>
             </div>

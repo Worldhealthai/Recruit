@@ -5,7 +5,21 @@ import Nav from '../components/Nav'
 import EmptyState from '../components/EmptyState'
 import CandidateFilters from '../components/CandidateFilters'
 import CandidateSearchBar from '../components/CandidateSearchBar'
+import ImportTrigger from './ImportTrigger'
 import { prisma } from '@/lib/prisma'
+
+// ── Source meta ───────────────────────────────────────────────────────────────
+
+const SOURCE_META: Record<string, { label: string; color: string }> = {
+  LINKEDIN:  { label: 'LinkedIn',   color: '#0A66C2' },
+  INDEED:    { label: 'Indeed',     color: '#003A9B' },
+  IMPORTED:  { label: 'CV-Library', color: '#E8320A' },
+  REFERRAL:  { label: 'Referral',   color: '#7c3aed' },
+  WEBSITE:   { label: 'Website',    color: '#059669' },
+  MANUAL:    { label: 'Manual',     color: '#6b7280' },
+  GLASSDOOR: { label: 'Glassdoor',  color: '#0caa41' },
+  OTHER:     { label: 'Other',      color: '#9ca3af' },
+}
 
 // ── Avatar palette ────────────────────────────────────────────────────────────
 
@@ -135,13 +149,16 @@ export default async function CandidatesPage({
 
       <div className="page-content" style={{ maxWidth: '1380px', margin: '0 auto', padding: '2rem 2.5rem' }}>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#111111', margin: '0 0 0.25rem' }}>
-            Talent Pool
-          </h1>
-          <p style={{ color: '#9ca3af', fontSize: '0.83rem', margin: 0 }}>
-            Search and filter your entire candidate database
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#111111', margin: '0 0 0.25rem' }}>
+              Talent Pool
+            </h1>
+            <p style={{ color: '#9ca3af', fontSize: '0.83rem', margin: 0 }}>
+              Sourced from LinkedIn, CV-Library, Indeed &amp; more
+            </p>
+          </div>
+          <ImportTrigger />
         </div>
 
         <Suspense fallback={
@@ -179,6 +196,7 @@ export default async function CandidatesPage({
                   const extraSkills = c.skills.length - topSkills.length
                   const salMin      = c.salary_expectation_min ? Math.round(Number(c.salary_expectation_min) / 1000) : null
                   const salMax      = c.salary_expectation_max ? Math.round(Number(c.salary_expectation_max) / 1000) : null
+                  const srcMeta     = SOURCE_META[c.source] ?? SOURCE_META.OTHER
 
                   return (
                     <Link key={c.id} href={`/candidates/${c.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
@@ -301,6 +319,9 @@ export default async function CandidatesPage({
                                     Relocation
                                   </span>
                                 )}
+                                <span style={{ background: `${srcMeta.color}12`, color: srcMeta.color, border: `1px solid ${srcMeta.color}28`, borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 700 }}>
+                                  {srcMeta.label}
+                                </span>
                               </div>
                             </div>
 
