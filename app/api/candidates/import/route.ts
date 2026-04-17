@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import Anthropic from '@anthropic-ai/sdk'
+import { SeniorityLevel, AvailabilityStatus, CandidateSource } from '@prisma/client'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
             phone: c.phone,
             current_title: c.current_title,
             current_company_id: company.id,
-            seniority_level: c.seniority_level as any,
+            seniority_level: c.seniority_level as SeniorityLevel,
             location_city: c.location_city,
             location_country: 'United Kingdom',
             region: 'EMEA',
@@ -130,9 +131,9 @@ export async function POST(req: NextRequest) {
             salary_expectation_max: c.salary_expectation_max,
             notice_period_days: c.notice_period_days ?? 30,
             years_experience: c.years_experience,
-            availability_status: c.availability_status as any,
+            availability_status: c.availability_status as AvailabilityStatus,
             summary: c.summary,
-            source: dbSource as any,
+            source: dbSource as CandidateSource,
             source_profile_url: sourceUrl,
             last_activity_date: new Date(Date.now() - Math.random() * 30 * 24 * 3600 * 1000),
           },
