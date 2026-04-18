@@ -7,7 +7,6 @@ import Nav from '../components/Nav'
 import EmptyState from '../components/EmptyState'
 import CandidateFilters from '../components/CandidateFilters'
 import CandidateSearchBar from '../components/CandidateSearchBar'
-import ImportTrigger from './ImportTrigger'
 import { prisma } from '@/lib/prisma'
 
 // ── Source meta ───────────────────────────────────────────────────────────────
@@ -160,7 +159,6 @@ export default async function CandidatesPage({
               Sourced from LinkedIn, CV-Library, Indeed &amp; more
             </p>
           </div>
-          <ImportTrigger />
         </div>
 
         <Suspense fallback={
