@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import Nav from '../components/Nav'
+import AppShell from '../components/AppShell'
 import { Suspense } from 'react'
 import PipelineTable from './PipelineTable'
 
@@ -73,37 +73,36 @@ export default async function PipelinePage() {
   const { recruiter, matches, stats } = await getData()
 
   return (
-    <div style={{ minHeight: '100vh', background: 'transparent', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-      <Nav active="/pipeline" />
-
-      <main className="page-content" style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 2.5rem' }}>
+    <AppShell>
+      <div className="page-content" style={{ padding: '1.5rem 2rem 3rem' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#111111', margin: '0 0 0.25rem' }}>
-              My Pipeline
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc', margin: '0 0 0.25rem' }}>
+              Pipeline
             </h1>
-            <p style={{ color: '#9ca3af', margin: 0, fontSize: '0.83rem' }}>
-              {recruiter ? `${recruiter.first_name} ${recruiter.last_name} · ${recruiter.company_name}` : 'Manage your active candidates'}
+            <p style={{ color: '#64748b', margin: 0, fontSize: '0.85rem' }}>
+              {recruiter ? `${recruiter.first_name} ${recruiter.last_name} · ${recruiter.company_name}` : 'Track candidates through every stage'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <a href="/screening" style={{
               display: 'inline-flex', alignItems: 'center',
-              background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)',
-              color: '#374151', borderRadius: '8px', padding: '0.45rem 1rem',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              color: '#cbd5e1', borderRadius: '0.5rem', padding: '0.55rem 1rem',
               fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease',
             }}>
               All Screenings
             </a>
             <a href="/placements" style={{
               display: 'inline-flex', alignItems: 'center',
-              background: '#111111', color: '#ffffff',
-              borderRadius: '8px', padding: '0.45rem 1rem',
-              fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#ffffff',
+              borderRadius: '0.5rem', padding: '0.55rem 1rem',
+              fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none',
+              boxShadow: '0 4px 20px rgba(99,102,241,0.35)',
             }}>
               Earnings & Invoices
             </a>
@@ -113,54 +112,34 @@ export default async function PipelinePage() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '0.85rem', marginBottom: '1.75rem' }}>
           {[
-            { label: 'Total Billed',       value: fmt(stats.totalBilled),     sub: 'gross fees',         accent: '#6366f1' },
-            { label: 'Net Earnings',        value: fmt(stats.netEarnings),     sub: 'after platform cut', accent: '#16a34a' },
-            { label: 'Cash Collected',      value: fmt(stats.paidEarnings),    sub: 'invoices paid',      accent: '#0ea5e9' },
-            { label: 'Pipeline Value',      value: fmt(stats.pendingPipeline), sub: 'est. from active',   accent: '#f59e0b' },
-            { label: 'Ready to Screen',     value: stats.readyForScreen.toString(), sub: 'awaiting AI call', accent: '#ef4444' },
-            { label: 'Total Placed',        value: stats.totalPlaced.toString(), sub: 'placements',       accent: '#6366f1' },
+            { label: 'Total Billed',   value: fmt(stats.totalBilled),        sub: 'gross fees',         color: '#818cf8' },
+            { label: 'Net Earnings',   value: fmt(stats.netEarnings),        sub: 'after platform cut', color: '#4ade80' },
+            { label: 'Cash Collected', value: fmt(stats.paidEarnings),       sub: 'invoices paid',      color: '#38bdf8' },
+            { label: 'Pipeline Value', value: fmt(stats.pendingPipeline),    sub: 'est. from active',   color: '#fbbf24' },
+            { label: 'Ready to Screen', value: stats.readyForScreen.toString(), sub: 'awaiting AI call', color: '#f87171' },
+            { label: 'Total Placed',   value: stats.totalPlaced.toString(),  sub: 'placements',         color: '#4ade80' },
           ].map(s => (
             <div key={s.label} style={{
-              background: 'rgba(255,255,255,0.75)',
-              border: '1px solid rgba(255,255,255,0.6)',
-              borderRadius: '12px', padding: '1rem 1.1rem',
-              boxShadow: '0 2px 10px rgba(99,102,241,0.07)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: '0.75rem', padding: '1rem 1.1rem',
             }}>
-              <div style={{ fontSize: '0.68rem', color: '#9ca3af', marginBottom: '0.3rem', textTransform: 'uppercase' as const, letterSpacing: '0.06em', fontWeight: 600 }}>{s.label}</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111111', letterSpacing: '-0.03em' }}>{s.value}</div>
-              <div style={{ fontSize: '0.7rem', color: '#c0c8d4', marginTop: '0.15rem' }}>{s.sub}</div>
+              <div style={{ fontSize: '0.68rem', color: '#64748b', marginBottom: '0.4rem', textTransform: 'uppercase' as const, letterSpacing: '0.06em', fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: s.color, letterSpacing: '-0.03em' }}>{s.value}</div>
+              <div style={{ fontSize: '0.7rem', color: '#475569', marginTop: '0.15rem' }}>{s.sub}</div>
             </div>
-          ))}
-        </div>
-
-        {/* Pipeline stages legend */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.72rem', color: '#9ca3af', marginRight: '0.1rem', fontWeight: 600 }}>Stage flow:</span>
-          {[
-            { label: 'Contacted',    color: '#3b82f6' },
-            { label: 'Interviewing', color: '#f59e0b' },
-            { label: 'Offer Made',   color: '#f97316' },
-            { label: 'Placed',       color: '#22c55e' },
-          ].map((s, i, arr) => (
-            <span key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: s.color, display: 'inline-block' }} />
-              <span style={{ color: '#6b7280' }}>{s.label}</span>
-              {i < arr.length - 1 && <span style={{ color: '#d1d5db', margin: '0 0.05rem' }}>›</span>}
-            </span>
           ))}
         </div>
 
         {/* Pipeline cards */}
         <Suspense fallback={
-          <div style={{ color: '#9ca3af', padding: '2rem', textAlign: 'center', fontSize: '0.88rem' }}>
+          <div style={{ color: '#64748b', padding: '2rem', textAlign: 'center', fontSize: '0.88rem' }}>
             Loading pipeline…
           </div>
         }>
           <PipelineTable matches={matches as Parameters<typeof PipelineTable>[0]['matches']} />
         </Suspense>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

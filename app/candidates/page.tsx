@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
-import Nav from '../components/Nav'
+import AppShell from '../components/AppShell'
 import EmptyState from '../components/EmptyState'
 import CandidateFilters from '../components/CandidateFilters'
 import CandidateSearchBar from '../components/CandidateSearchBar'
@@ -13,13 +13,13 @@ import { prisma } from '@/lib/prisma'
 
 const SOURCE_META: Record<string, { label: string; color: string }> = {
   LINKEDIN:  { label: 'LinkedIn',   color: '#0A66C2' },
-  INDEED:    { label: 'Indeed',     color: '#003A9B' },
-  IMPORTED:  { label: 'CV-Library', color: '#E8320A' },
-  REFERRAL:  { label: 'Referral',   color: '#7c3aed' },
+  INDEED:    { label: 'Indeed',     color: '#2164f3' },
+  IMPORTED:  { label: 'CV-Library', color: '#0d7a3e' },
+  REFERRAL:  { label: 'Referral',   color: '#8b5cf6' },
   WEBSITE:   { label: 'Website',    color: '#059669' },
-  MANUAL:    { label: 'Manual',     color: '#6b7280' },
+  MANUAL:    { label: 'Manual',     color: '#64748b' },
   GLASSDOOR: { label: 'Glassdoor',  color: '#0caa41' },
-  OTHER:     { label: 'Other',      color: '#9ca3af' },
+  OTHER:     { label: 'Other',      color: '#475569' },
 }
 
 // ── Avatar palette ────────────────────────────────────────────────────────────
@@ -35,8 +35,8 @@ function nameColor(name: string): string {
 function availDot(status: string): { color: string; label: string } {
   if (status === 'ACTIVELY_LOOKING') return { color: '#22c55e', label: 'Active' }
   if (status === 'OPEN_TO_OFFERS')   return { color: '#f59e0b', label: 'Open' }
-  if (status === 'PASSIVE')          return { color: '#d1d5db', label: 'Passive' }
-  if (status === 'NOT_LOOKING')      return { color: '#e5e7eb', label: 'Not looking' }
+  if (status === 'PASSIVE')          return { color: '#64748b', label: 'Passive' }
+  if (status === 'NOT_LOOKING')      return { color: '#475569', label: 'Not looking' }
   return { color: '#ef4444', label: 'Unavailable' }
 }
 
@@ -140,37 +140,35 @@ export default async function CandidatesPage({
   const candidates = await getCandidates(searchParams)
 
   const statPill: React.CSSProperties = {
-    background: 'rgba(0,0,0,0.055)', borderRadius: '4px',
-    padding: '0.1rem 0.42rem', fontSize: '0.7rem', color: '#6b7280',
+    background: 'rgba(255,255,255,0.06)', borderRadius: '0.25rem',
+    padding: '0.1rem 0.42rem', fontSize: '0.7rem', color: '#94a3b8',
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'transparent', color: '#111111', fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-      <Nav active="/candidates" />
-
-      <div className="page-content" style={{ maxWidth: '1380px', margin: '0 auto', padding: '2rem 2.5rem' }}>
+    <AppShell>
+      <div className="page-content" style={{ padding: '1.5rem 2rem 3rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.04em', color: '#111111', margin: '0 0 0.25rem' }}>
-              Talent Pool
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc', margin: '0 0 0.25rem' }}>
+              Candidate database
             </h1>
-            <p style={{ color: '#9ca3af', fontSize: '0.83rem', margin: 0 }}>
-              Sourced from LinkedIn, CV-Library, Indeed &amp; more
+            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>
+              {candidates.length.toLocaleString()} profiles · live from LinkedIn, Indeed &amp; CV Library
             </p>
           </div>
         </div>
 
         <Suspense fallback={
-          <div style={{ height: '52px', background: '#fff', borderRadius: '0.75rem', marginBottom: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} />
+          <div style={{ height: '52px', background: 'rgba(255,255,255,0.03)', borderRadius: '0.75rem', marginBottom: '1.5rem' }} />
         }>
           <CandidateSearchBar totalResults={candidates.length} />
         </Suspense>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '1.25rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '1.25rem', alignItems: 'start' }}>
 
           <Suspense fallback={
-            <div style={{ height: '600px', background: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }} />
+            <div style={{ height: '600px', background: 'rgba(255,255,255,0.02)', borderRadius: '0.75rem' }} />
           }>
             <CandidateFilters />
           </Suspense>
@@ -178,12 +176,12 @@ export default async function CandidatesPage({
           <div>
             {candidates.length === 0 ? (
               <EmptyState
-                icon="👤"
+                icon="◈"
                 message="No candidates match your search"
                 hint="Try adjusting your filters, or seed the database if empty."
               />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {candidates.map((c) => {
                   const color       = nameColor(c.first_name + c.last_name)
                   const initials    = `${c.first_name[0]}${c.last_name[0]}`.toUpperCase()
@@ -192,30 +190,28 @@ export default async function CandidatesPage({
                   const yrsInRole   = currentExp ? yearsFrom(currentExp.start_date) : null
                   const dept        = c.current_department ?? currentExp?.department ?? null
                   const industry    = c.current_company?.industry ?? null
-                  const topSkills   = c.skills.slice(0, 6)
+                  const topSkills   = c.skills.slice(0, 5)
                   const extraSkills = c.skills.length - topSkills.length
                   const salMin      = c.salary_expectation_min ? Math.round(Number(c.salary_expectation_min) / 1000) : null
                   const salMax      = c.salary_expectation_max ? Math.round(Number(c.salary_expectation_max) / 1000) : null
                   const srcMeta     = SOURCE_META[c.source] ?? SOURCE_META.OTHER
+                  const glowColor   = avail.color === '#22c55e' ? `0 0 8px ${avail.color}` : 'none'
 
                   return (
                     <Link key={c.id} href={`/candidates/${c.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                       <div className="candidate-card" style={{
-                        background: 'rgba(255,255,255,0.82)',
-                        border: '1px solid rgba(255,255,255,0.65)',
-                        borderRadius: '12px',
-                        padding: '1rem 1.35rem',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        borderRadius: '0.75rem',
+                        padding: '1rem 1.25rem',
                         cursor: 'pointer',
-                        boxShadow: '0 2px 12px rgba(99,102,241,0.07), 0 1px 3px rgba(0,0,0,0.04)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
                       }}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
 
                           {/* Avatar */}
                           <div style={{
                             width: '42px', height: '42px', borderRadius: '50%', flexShrink: 0,
-                            background: `${color}15`, border: `2px solid ${color}30`,
+                            background: `${color}20`, border: `1.5px solid ${color}40`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontWeight: 800, fontSize: '0.82rem', color, letterSpacing: '-0.02em',
                           }}>
@@ -226,69 +222,69 @@ export default async function CandidatesPage({
 
                             {/* Row 1: name + seniority + availability */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem', flexWrap: 'wrap' }}>
-                              <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#111111', letterSpacing: '-0.01em' }}>
+                              <span style={{ fontWeight: 700, fontSize: '0.93rem', color: '#f1f5f9', letterSpacing: '-0.01em' }}>
                                 {c.first_name} {c.last_name}
                               </span>
                               <span style={{
-                                border: '1px solid rgba(0,0,0,0.12)', borderRadius: '4px',
-                                padding: '0.04rem 0.38rem', fontSize: '0.62rem', fontWeight: 600,
-                                color: '#9ca3af', letterSpacing: '0.04em', textTransform: 'uppercase',
+                                color: '#64748b', fontSize: '0.65rem', fontWeight: 700,
+                                letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                               }}>
                                 {c.seniority_level.replace(/_/g, ' ')}
                               </span>
-                              <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: avail.color, border: avail.color === '#e5e7eb' || avail.color === '#d1d5db' ? '1px solid #d1d5db' : 'none' }} />
-                                <span style={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: 500 }}>{avail.label}</span>
+                              <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: avail.color, boxShadow: glowColor }} />
+                                <span style={{ fontSize: '0.68rem', color: avail.color, fontWeight: 600 }}>{avail.label}</span>
                               </span>
                             </div>
 
                             {/* Row 2: title · company · industry */}
                             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.2rem', marginBottom: dept ? '0.08rem' : '0.4rem' }}>
                               {c.current_title && (
-                                <span style={{ fontSize: '0.84rem', color: '#374151', fontWeight: 500 }}>{c.current_title}</span>
+                                <span style={{ fontSize: '0.83rem', color: '#cbd5e1', fontWeight: 500 }}>{c.current_title}</span>
                               )}
                               {c.current_company && (
-                                <span style={{ fontSize: '0.81rem', color: '#9ca3af' }}>· {c.current_company.name}</span>
+                                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>· {c.current_company.name}</span>
                               )}
                               {industry && (
-                                <span style={{ fontSize: '0.78rem', color: '#c0c8d4' }}>· {industry}</span>
+                                <span style={{ fontSize: '0.76rem', color: '#475569' }}>· {industry}</span>
                               )}
                             </div>
 
                             {dept && (
-                              <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.35rem' }}>{dept}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.35rem' }}>{dept}</div>
                             )}
 
                             {c.summary && (
                               <div style={{
-                                fontSize: '0.78rem', color: '#6b7280', lineHeight: 1.55,
+                                fontSize: '0.78rem', color: '#64748b', lineHeight: 1.55,
                                 display: '-webkit-box', WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                                marginBottom: '0.6rem',
+                                marginBottom: '0.55rem',
                               }}>
                                 {c.summary}
                               </div>
                             )}
 
                             {topSkills.length > 0 && (
-                              <div style={{ display: 'flex', gap: '0.22rem', flexWrap: 'wrap', marginBottom: '0.7rem' }}>
+                              <div style={{ display: 'flex', gap: '0.2rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
                                 {topSkills.map(cs => (
                                   <span key={cs.skill.name} style={{
-                                    background: '#f3f4f6', color: '#374151',
-                                    borderRadius: '4px', padding: '0.1rem 0.42rem',
-                                    fontSize: '0.7rem', fontWeight: 500,
+                                    background: 'rgba(99,102,241,0.1)', color: '#a5b4fc',
+                                    border: '1px solid rgba(99,102,241,0.2)',
+                                    borderRadius: '0.2rem', padding: '0.1rem 0.42rem',
+                                    fontSize: '0.68rem', fontWeight: 500,
                                   }}>
                                     {cs.skill.name}
                                   </span>
                                 ))}
                                 {extraSkills > 0 && (
-                                  <span style={{ fontSize: '0.7rem', color: '#9ca3af', alignSelf: 'center' }}>+{extraSkills}</span>
+                                  <span style={{ fontSize: '0.68rem', color: '#475569', alignSelf: 'center' }}>+{extraSkills}</span>
                                 )}
                               </div>
                             )}
 
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                              <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                                 {c.years_experience != null && <span style={statPill}>{c.years_experience}y exp</span>}
                                 {yrsInRole != null && <span style={statPill}>{yrsInRole}y in role</span>}
                                 {c.notice_period_days != null && (
@@ -303,23 +299,18 @@ export default async function CandidatesPage({
                                 )}
                               </div>
 
-                              <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                 {(c.location_city || c.location_country) && (
-                                  <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>
-                                    {c.location_city || c.location_country}
+                                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                    📍 {c.location_city || c.location_country}
                                   </span>
                                 )}
                                 {c.is_remote_open && (
-                                  <span style={{ background: 'rgba(0,0,0,0.05)', color: '#374151', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
+                                  <span style={{ background: 'rgba(255,255,255,0.06)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.2rem', padding: '0.06rem 0.35rem', fontSize: '0.65rem', fontWeight: 600 }}>
                                     Remote
                                   </span>
                                 )}
-                                {c.is_relocation_open && (
-                                  <span style={{ background: 'rgba(0,0,0,0.05)', color: '#374151', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 600 }}>
-                                    Relocation
-                                  </span>
-                                )}
-                                <span style={{ background: `${srcMeta.color}12`, color: srcMeta.color, border: `1px solid ${srcMeta.color}28`, borderRadius: '4px', padding: '0.08rem 0.38rem', fontSize: '0.65rem', fontWeight: 700 }}>
+                                <span style={{ background: `${srcMeta.color}18`, color: srcMeta.color, border: `1px solid ${srcMeta.color}35`, borderRadius: '0.2rem', padding: '0.06rem 0.38rem', fontSize: '0.65rem', fontWeight: 700 }}>
                                   {srcMeta.label}
                                 </span>
                               </div>
@@ -336,6 +327,6 @@ export default async function CandidatesPage({
           </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   )
 }

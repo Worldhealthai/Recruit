@@ -1,29 +1,20 @@
-import Nav from './Nav'
-
-const pageStyles: React.CSSProperties = {
-  minHeight: '100vh',
-  background: 'transparent',
-  color: '#111111',
-  fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-}
+import AppShell from './AppShell'
 
 export default function PageShell({
-  active,
   title,
   subtitle,
   children,
   badge,
 }: {
-  active: string
+  active?: string
   title: string
   subtitle: string
   children: React.ReactNode
   badge?: string
 }) {
   return (
-    <div style={pageStyles}>
-      <Nav active={active} />
-      <main className="page-content" style={{ maxWidth: '1280px', margin: '0 auto', padding: '2.5rem 2.5rem' }}>
+    <AppShell>
+      <div style={{ padding: '1.5rem 2rem 3rem' }}>
         <header style={{ marginBottom: '2rem' }}>
           {badge && (
             <span style={{
@@ -33,7 +24,7 @@ export default function PageShell({
               borderRadius: '999px',
               padding: '0.18rem 0.75rem',
               fontSize: '0.72rem',
-              color: '#6366f1',
+              color: '#a5b4fc',
               marginBottom: '0.65rem',
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
@@ -42,13 +33,13 @@ export default function PageShell({
               {badge}
             </span>
           )}
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', margin: '0 0 0.35rem', color: '#111111' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 0.25rem', color: '#f8fafc' }}>
             {title}
           </h1>
-          <p style={{ color: '#9ca3af', margin: 0, fontSize: '0.88rem' }}>{subtitle}</p>
+          <p style={{ color: '#64748b', margin: 0, fontSize: '0.85rem' }}>{subtitle}</p>
         </header>
         {children}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

@@ -79,7 +79,8 @@ function buildChips(sp: ReturnType<typeof useSearchParams>): Chip[] {
 
 const chipStyle: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-  background: '#111111', color: '#ffffff',
+  background: 'rgba(99,102,241,0.15)', color: '#a5b4fc',
+  border: '1px solid rgba(99,102,241,0.3)',
   borderRadius: '999px',
   padding: '0.22rem 0.5rem 0.22rem 0.75rem', fontSize: '0.73rem', fontWeight: 500,
   whiteSpace: 'nowrap',
@@ -158,7 +159,7 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
         {/* Search icon */}
         <div style={{
           position: 'absolute', left: '1.1rem', top: '50%', transform: 'translateY(-50%)',
-          color: '#c0c8d4', pointerEvents: 'none', display: 'flex',
+          color: '#64748b', pointerEvents: 'none', display: 'flex',
         }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -175,14 +176,11 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           style={{
             width: '100%', height: '52px',
             padding: '0 13rem 0 2.9rem',
-            background: 'rgba(255,255,255,0.82)',
-            border: '1px solid rgba(255,255,255,0.65)',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: '0.75rem',
-            color: '#111111', fontSize: '0.93rem',
+            color: '#f8fafc', fontSize: '0.93rem',
             outline: 'none', boxSizing: 'border-box',
-            boxShadow: '0 2px 12px rgba(99,102,241,0.07)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
           }}
         />
 
@@ -216,7 +214,7 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
               )}
             </button>
           )}
-          <span style={{ color: '#c0c8d4', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#64748b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
             {totalResults.toLocaleString()} candidates
           </span>
         </div>
@@ -227,9 +225,9 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
         <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
           {['Sales Executive London', 'Senior BDM open to work', 'Finance Director 10+ years', 'Marketing Manager remote'].map(hint => (
             <button key={hint} onClick={() => { setValue(hint); setTimeout(handleAiParse, 50) }} style={{
-              background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(0,0,0,0.08)',
-              color: '#6b7280', borderRadius: '999px', padding: '0.18rem 0.65rem',
-              fontSize: '0.72rem', cursor: 'pointer', backdropFilter: 'blur(8px)',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              color: '#94a3b8', borderRadius: '999px', padding: '0.18rem 0.65rem',
+              fontSize: '0.72rem', cursor: 'pointer',
             }}>
               {hint}
             </button>
@@ -255,8 +253,8 @@ export default function CandidateSearchBar({ totalResults }: { totalResults: num
           <button
             onClick={clearAll}
             style={{
-              background: 'none', border: '1px solid rgba(0,0,0,0.12)',
-              color: '#6b7280', borderRadius: '999px',
+              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#94a3b8', borderRadius: '999px',
               padding: '0.22rem 0.7rem', fontSize: '0.72rem', cursor: 'pointer',
             }}
           >
