@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { spawn, execFileSync } from 'child_process'
+import { spawn } from 'child_process'
+import { existsSync } from 'fs'
 import path from 'path'
 import { prisma } from '@/lib/prisma'
 
@@ -17,13 +18,12 @@ function getPython(): string {
     '/usr/bin/python',
   ]
   for (const bin of candidates) {
-    try {
-      execFileSync(bin, ['--version'], { stdio: 'ignore' })
+    if (existsSync(bin)) {
       _python = bin
       return bin
-    } catch { /* try next */ }
+    }
   }
-  throw new Error('Python 3 not found on this server. Install python-jobspy first.')
+  throw new Error('Python 3 not found. Checked: ' + candidates.join(', '))
 }
 
 // ── Field maps (mirrored from scrape_jobs.py) ────────────────────────────────
