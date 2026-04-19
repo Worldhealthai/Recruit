@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
+function authorized(req: NextRequest): boolean {
+  const key = process.env.SCRAPE_API_KEY
+  if (!key) return true // no key configured = open (dev mode)
+  const auth = req.headers.get('authorization') ?? ''
+  return auth === `Bearer ${key}`
+}
+
 interface JobPayload {
   external_id?: string
   source: string
@@ -41,6 +50,9 @@ function safe<T>(val: string, allowed: T[], fallback: T): T {
 }
 
 export async function POST(req: NextRequest) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const { jobs }: { jobs: JobPayload[] } = await req.json()
 

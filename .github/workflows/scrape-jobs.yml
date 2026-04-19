@@ -1,0 +1,84 @@
+name: Scrape Jobs
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # every day at 06:00 UTC
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+    inputs:
+      queries:
+        description: 'Comma-separated search queries to run (leave blank for all)'
+        required: false
+        default: ''
+
+jobs:
+  scrape:
+    name: Scrape & Import
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3      # run 3 searches at a time
+      matrix:
+        search:
+          - { query: "Sales Manager",              location: "London, UK",     sites: "indeed linkedin" }
+          - { query: "Business Development Manager", location: "London, UK",   sites: "indeed linkedin" }
+          - { query: "Software Engineer",           location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Senior Software Engineer",    location: "London, UK",    sites: "indeed" }
+          - { query: "Product Manager",             location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Marketing Manager",           location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Finance Director",            location: "London, UK",    sites: "indeed" }
+          - { query: "FP&A Manager",                location: "London, UK",    sites: "indeed" }
+          - { query: "Data Engineer",               location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Data Scientist",              location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Customer Success Manager",    location: "London, UK",    sites: "indeed" }
+          - { query: "HR Business Partner",         location: "London, UK",    sites: "indeed" }
+          - { query: "Account Manager",             location: "Manchester, UK", sites: "indeed" }
+          - { query: "DevOps Engineer",             location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Account Executive",           location: "London, UK",    sites: "indeed linkedin" }
+          - { query: "Operations Manager",          location: "London, UK",    sites: "indeed" }
+          - { query: "Head of Engineering",         location: "London, UK",    sites: "indeed" }
+          - { query: "Compliance Manager",          location: "London, UK",    sites: "indeed" }
+          - { query: "Sales Director",              location: "London, UK",    sites: "indeed" }
+          - { query: "UX Designer",                 location: "London, UK",    sites: "indeed linkedin" }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install python-jobspy requests
+
+      - name: Scrape — ${{ matrix.search.query }}
+        env:
+          APP_URL:        ${{ secrets.APP_URL }}
+          SCRAPE_API_KEY: ${{ secrets.SCRAPE_API_KEY }}
+        run: |
+          python scripts/scrape_jobs.py \
+            --query "${{ matrix.search.query }}" \
+            --location "${{ matrix.search.location }}" \
+            --sites ${{ matrix.search.sites }} \
+            --results 100 \
+            --hours 48 \
+            --country UK \
+            --output /tmp/jobs.json
+
+          echo "Scraped $(python3 -c "import json; d=json.load(open('/tmp/jobs.json')); print(len(d.get('jobs', [])))" 2>/dev/null || echo 0) jobs"
+
+          curl -sf \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $SCRAPE_API_KEY" \
+            -d @/tmp/jobs.json \
+            "$APP_URL/api/jobs/import" \
+            | python3 -m json.tool
+
+      - name: Sleep between runs
+        if: ${{ !env.ACT }}
+        run: sleep 15   # be polite to job boards
