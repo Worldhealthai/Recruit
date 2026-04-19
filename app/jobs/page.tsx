@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
-import PageShell from '../components/PageShell'
+import AppShell from '../components/AppShell'
 import EmptyState from '../components/EmptyState'
 import JobFilters from '../components/JobFilters'
+import JobImportTrigger from '../components/JobImportTrigger'
 import { prisma } from '@/lib/prisma'
 
 const workModeColors: Record<string, string> = {
@@ -120,12 +121,16 @@ export default async function JobsPage({
   if (str(searchParams.recent) === '1')          activeFilters.push('Last 7 days')
 
   return (
-    <PageShell
-      active="/jobs"
-      title="Jobs"
-      subtitle="Search across every sector in the UK — tech, hospitality, events, healthcare and more"
-      badge="Job Board"
-    >
+    <AppShell>
+      <div style={{ padding: '1.5rem 2rem 3rem' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc', margin: '0 0 0.25rem' }}>Jobs</h1>
+          <p style={{ color: '#64748b', margin: 0, fontSize: '0.85rem' }}>Search across every sector — tech, hospitality, healthcare and more</p>
+        </div>
+        <JobImportTrigger />
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '1.5rem', alignItems: 'start' }}>
         {/* Filter sidebar */}
         <Suspense fallback={
@@ -230,6 +235,7 @@ export default async function JobsPage({
           )}
         </div>
       </div>
-    </PageShell>
+      </div>
+    </AppShell>
   )
 }
