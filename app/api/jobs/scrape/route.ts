@@ -1,8 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { spawn } from 'child_process'
+import { spawn, execSync } from 'child_process'
 import path from 'path'
 
 export const maxDuration = 60
+
+// Resolve python at startup — try common locations so spawn never gets ENOENT
+function resolvePython(): string {
+  const candidates = [
+    '/usr/local/bin/python3',
+    '/usr/bin/python3',
+    '/usr/local/bin/python',
+    '/usr/bin/python',
+    'python3',
+    'python',
+  ]
+  for (const bin of candidates) {
+    try {
+      execSync(`${bin} --version`, { stdio: 'ignore' })
+      return bin
+    } catch {
+      // try next
+    }
+  }
+  throw new Error('Python not found. Install Python 3 and python-jobspy.')
+}
+
+const PYTHON = resolvePython()
 
 interface ScrapeRequest {
   query: string
@@ -28,7 +51,7 @@ function runScraper(args: ScrapeRequest): Promise<{ jobs: unknown[] }> {
       argv.push('--sites', ...args.sites)
     }
 
-    const proc = spawn('python3', argv)
+    const proc = spawn(PYTHON, argv)
 
     let stdout = ''
     let stderr = ''
