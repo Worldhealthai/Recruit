@@ -178,8 +178,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, id: candidate.id }, { status: 201 })
   } catch (err) {
-    console.error('[POST /api/apply]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[POST /api/apply]', message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
