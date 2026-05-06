@@ -15,10 +15,13 @@ async function handleSave(candidate) {
   const { apiUrl, apiKey } = await chrome.storage.sync.get(['apiUrl', 'apiKey'])
 
   if (!apiUrl) {
-    return { ok: false, error: 'No API URL set. Open the extension popup and configure it.' }
+    return { ok: false, error: '⚙️ No App URL set — click the R icon in your toolbar and enter your app URL.' }
   }
 
-  const url = apiUrl.replace(/\/$/, '') + '/api/apply'
+  const base = apiUrl.replace(/\/$/, '')
+  const url  = base + '/api/apply'
+
+  console.log('[RecruitAI] Posting to', url)
 
   try {
     const res = await fetch(url, {
@@ -30,12 +33,19 @@ async function handleSave(candidate) {
       body: JSON.stringify(candidate),
     })
 
-    const data = await res.json()
+    let data
+    try { data = await res.json() } catch { data = {} }
 
-    if (res.status === 409) return { ok: false, error: 'Already in database (duplicate email).' }
+    if (res.status === 409) return { ok: false, error: '⚠️ Already in database — this email already exists.' }
+    if (res.status === 401) return { ok: false, error: '🔑 Unauthorized — set matching API Key in the extension popup and Vercel env vars.' }
     if (!res.ok) return { ok: false, error: data.error || `Server error ${res.status}` }
     return { ok: true, id: data.id }
   } catch (err) {
-    return { ok: false, error: err.message || 'Network error — is the app running?' }
+    console.error('[RecruitAI] Fetch failed:', err)
+    const msg = err.message || ''
+    if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('networkerror')) {
+      return { ok: false, error: `❌ Can't reach ${base} — is the app deployed and the URL correct?` }
+    }
+    return { ok: false, error: msg || 'Network error' }
   }
 }
