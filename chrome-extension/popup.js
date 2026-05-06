@@ -10,7 +10,7 @@ chrome.storage.sync.get(['apiUrl', 'apiKey'], ({ apiUrl, apiKey }) => {
 })
 
 saveBtn.addEventListener('click', () => {
-  const apiUrl = urlInput.value.trim().replace(/\/$/, '')
+  let apiUrl = urlInput.value.trim().replace(/\/$/, '')
   const apiKey = keyInput.value.trim()
 
   if (!apiUrl) {
@@ -18,8 +18,14 @@ saveBtn.addEventListener('click', () => {
     return
   }
 
+  // Auto-add https:// if no protocol given
+  if (!/^https?:\/\//i.test(apiUrl)) {
+    apiUrl = 'https://' + apiUrl
+    urlInput.value = apiUrl
+  }
+
   chrome.storage.sync.set({ apiUrl, apiKey }, () => {
-    showStatus('success', '✓ Settings saved')
+    showStatus('success', '✓ Settings saved — ' + apiUrl)
   })
 })
 
