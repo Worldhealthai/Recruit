@@ -1,6 +1,6 @@
 // CV Library candidate profile scraper
 
-window.__recruitAI.source = 'OTHER'
+window.__recruitAI.source = 'IMPORTED'
 
 function extractCVLibrary () {
   const text = sel => document.querySelector(sel)?.innerText?.trim() || ''
@@ -28,7 +28,7 @@ function extractCVLibrary () {
     skills,
     seniority_level: 'MID',
     availability_status: 'OPEN_TO_OFFERS',
-    source: 'OTHER',
+    source: 'IMPORTED',
     source_profile_url: window.location.href,
   }
 }
