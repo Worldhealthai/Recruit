@@ -1,6 +1,6 @@
 // Reed.co.uk candidate profile scraper
 
-window.__recruitAI.source = 'OTHER'
+window.__recruitAI.source = 'IMPORTED'
 
 function extractReed () {
   const text = sel => document.querySelector(sel)?.innerText?.trim() || ''
@@ -22,7 +22,7 @@ function extractReed () {
     location_city, location_country: 'United Kingdom',
     region: 'Other', summary: summary.slice(0, 2000), skills,
     seniority_level: 'MID', availability_status: 'OPEN_TO_OFFERS',
-    source: 'OTHER', source_profile_url: window.location.href,
+    source: 'IMPORTED', source_profile_url: window.location.href,
   }
 }
 

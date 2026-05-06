@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+const ALLOWED_SOURCES = ['LINKEDIN','INDEED','IMPORTED','REFERRAL','WEBSITE','MANUAL','GLASSDOOR','OTHER'] as const
+
 function slugDomain(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.com'
 }
 
+function authorized(req: NextRequest): boolean {
+  const key = process.env.SCRAPE_API_KEY
+  if (!key) return true // no key set → open (dev mode or public form)
+  const header = req.headers.get('authorization')
+  return header === `Bearer ${key}`
+}
+
 export async function POST(req: NextRequest) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await req.json()
 
@@ -21,7 +34,10 @@ export async function POST(req: NextRequest) {
       skills,
       experiences,
       education,
+      source: rawSource,
     } = body
+
+    const source = ALLOWED_SOURCES.includes(rawSource) ? rawSource : 'WEBSITE'
 
     // ── Required field validation ─────────────────────────────────────────────
     const missing: string[] = []
@@ -108,7 +124,7 @@ export async function POST(req: NextRequest) {
         years_experience:       years_experience       ? parseInt(years_experience)          : null,
         availability_status,
         summary:                summary?.trim() || null,
-        source:                 'WEBSITE',
+        source,
         last_activity_date:     new Date(),
 
         skills: skillRecords.length ? {
