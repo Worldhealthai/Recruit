@@ -6,7 +6,6 @@ import { Prisma } from '@prisma/client'
 import AppShell from '../components/AppShell'
 import EmptyState from '../components/EmptyState'
 import JobFilters from '../components/JobFilters'
-import JobImportTrigger from '../components/JobImportTrigger'
 import { prisma } from '@/lib/prisma'
 
 const workModeColors: Record<string, string> = {
@@ -129,7 +128,6 @@ export default async function JobsPage({
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc', margin: '0 0 0.25rem' }}>Jobs</h1>
           <p style={{ color: '#64748b', margin: 0, fontSize: '0.85rem' }}>Search across every sector — tech, hospitality, healthcare and more</p>
         </div>
-        <JobImportTrigger />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '1.5rem', alignItems: 'start' }}>
         {/* Filter sidebar */}
