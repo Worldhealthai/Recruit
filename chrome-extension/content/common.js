@@ -142,8 +142,9 @@ async function saveCandidate (panel) {
   const statusEl = panel.querySelector('#rai-status')
 
   btn.disabled = true
-  btn.textContent = 'Saving…'
-  btn.style.opacity = '0.6'
+  btn.textContent = '⏳ Saving…'
+  btn.style.opacity = '0.75'
+  btn.style.cursor = 'default'
 
   const get = name => (panel.querySelector(`[name="${name}"]`)?.value || '').trim()
 
@@ -185,9 +186,16 @@ async function saveCandidate (panel) {
     return
   }
 
-  const result = await chrome.runtime.sendMessage({ type: 'SAVE_CANDIDATE', payload: candidate })
+  let result
+  try {
+    result = await chrome.runtime.sendMessage({ type: 'SAVE_CANDIDATE', payload: candidate })
+  } catch (err) {
+    showStatus(statusEl, 'error', 'Extension error — try reloading the page.')
+    resetBtn(btn)
+    return
+  }
 
-  if (result.ok) {
+  if (result?.ok) {
     showStatus(statusEl, 'success', '✓ Saved to RecruitAI!')
     btn.textContent = '✓ Saved'
     btn.style.background = 'rgba(34,197,94,0.2)'
@@ -196,7 +204,7 @@ async function saveCandidate (panel) {
     btn.style.boxShadow = 'none'
     btn.style.opacity = '1'
   } else {
-    showStatus(statusEl, 'error', result.error || 'Unknown error')
+    showStatus(statusEl, 'error', result?.error || 'Unknown error')
     resetBtn(btn)
   }
 }
