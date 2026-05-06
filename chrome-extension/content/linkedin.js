@@ -74,7 +74,7 @@ function extractLinkedIn () {
   else if (/\bhead of\b|c-suite|chief/.test(titleLower))  seniority_level = 'C_SUITE'
   else if (/\bsenior manager\b/.test(titleLower))         seniority_level = 'SENIOR_MANAGER'
   else if (/\bmanager\b/.test(titleLower))                seniority_level = 'MANAGER'
-  else if (/\blead\b/.test(titleLower))                   seniority_level = 'LEAD'
+  else if (/\blead\b/.test(titleLower))                   seniority_level = 'SENIOR'
   else if (/\bsenior\b|sr\./.test(titleLower))            seniority_level = 'SENIOR'
   else if (/\bjunior\b|jr\./.test(titleLower))            seniority_level = 'JUNIOR'
   else if (/\bintern\b/.test(titleLower))                 seniority_level = 'INTERN'

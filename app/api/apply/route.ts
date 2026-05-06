@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-const ALLOWED_SOURCES = ['LINKEDIN','INDEED','IMPORTED','REFERRAL','WEBSITE','MANUAL','GLASSDOOR','OTHER'] as const
+const ALLOWED_SOURCES    = ['LINKEDIN','INDEED','IMPORTED','REFERRAL','WEBSITE','MANUAL','GLASSDOOR','OTHER'] as const
+const ALLOWED_SENIORITY  = ['INTERN','JUNIOR','MID','SENIOR','MANAGER','SENIOR_MANAGER','DIRECTOR','VP','C_SUITE'] as const
+const ALLOWED_AVAIL      = ['ACTIVELY_LOOKING','OPEN_TO_OFFERS','PASSIVE','NOT_LOOKING','UNAVAILABLE'] as const
+
+// Map values the extension may send that don't exist in the DB enum
+const SENIORITY_MAP: Record<string, string> = { LEAD: 'SENIOR' }
 
 function slugDomain(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.com'
@@ -37,7 +42,10 @@ export async function POST(req: NextRequest) {
       source: rawSource,
     } = body
 
-    const source = ALLOWED_SOURCES.includes(rawSource) ? rawSource : 'WEBSITE'
+    const source         = ALLOWED_SOURCES.includes(rawSource)   ? rawSource   : 'WEBSITE'
+    const rawSeniority   = (SENIORITY_MAP[seniority_level] ?? seniority_level) as string
+    const safeSeniority  = (ALLOWED_SENIORITY as readonly string[]).includes(rawSeniority) ? rawSeniority : 'MID'
+    const safeAvail      = (ALLOWED_AVAIL as readonly string[]).includes(availability_status) ? availability_status : 'OPEN_TO_OFFERS'
 
     // ── Required field validation ─────────────────────────────────────────────
     const missing: string[] = []
@@ -111,7 +119,7 @@ export async function POST(req: NextRequest) {
         current_title:          current_title.trim(),
         current_company_id,
         current_department:     current_department?.trim() || null,
-        seniority_level,
+        seniority_level:        safeSeniority as 'INTERN'|'JUNIOR'|'MID'|'SENIOR'|'MANAGER'|'SENIOR_MANAGER'|'DIRECTOR'|'VP'|'C_SUITE',
         location_city:          location_city.trim(),
         location_country:       location_country.trim(),
         region:                 region.trim(),
@@ -122,9 +130,10 @@ export async function POST(req: NextRequest) {
         salary_expectation_max: salary_expectation_max ? parseFloat(salary_expectation_max) : null,
         notice_period_days:     notice_period_days     ? parseInt(notice_period_days)        : null,
         years_experience:       years_experience       ? parseInt(years_experience)          : null,
-        availability_status,
+        availability_status:    safeAvail as 'ACTIVELY_LOOKING'|'OPEN_TO_OFFERS'|'PASSIVE'|'NOT_LOOKING'|'UNAVAILABLE',
         summary:                summary?.trim() || null,
-        source,
+        source:                 source as typeof ALLOWED_SOURCES[number],
+        source_profile_url:     body.source_profile_url?.trim() || null,
         last_activity_date:     new Date(),
 
         skills: skillRecords.length ? {
