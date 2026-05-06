@@ -4,7 +4,7 @@ window.__recruitAI = window.__recruitAI || {}
 
 const R = window.__recruitAI
 
-R.SENIORITY_OPTIONS = ['INTERN','JUNIOR','MID','SENIOR','LEAD','MANAGER','SENIOR_MANAGER','DIRECTOR','VP','C_SUITE']
+R.SENIORITY_OPTIONS = ['INTERN','JUNIOR','MID','SENIOR','MANAGER','SENIOR_MANAGER','DIRECTOR','VP','C_SUITE']
 R.AVAILABILITY_OPTIONS = ['ACTIVELY_LOOKING','OPEN_TO_OFFERS','PASSIVE','NOT_LOOKING']
 
 // ── Inject sidebar ───────────────────────────────────────────────────────────
