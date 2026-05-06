@@ -4,14 +4,11 @@ import Link from 'next/link'
 import RecruiterBadge from './RecruiterBadge'
 
 const links = [
-  { href: '/pipeline',        label: 'Pipeline' },
-  { href: '/candidates',      label: 'Candidates' },
-  { href: '/jobs',            label: 'Jobs' },
-  { href: '/matches',         label: 'Matches' },
-  { href: '/screening',       label: 'Screening' },
-  { href: '/placements',      label: 'Placements' },
-  { href: '/market-insights', label: 'Market Insights' },
-  { href: '/analytics',      label: 'Analytics' },
+  { href: '/pipeline',   label: 'Pipeline' },
+  { href: '/candidates', label: 'Candidates' },
+  { href: '/jobs',       label: 'Jobs' },
+  { href: '/screening',  label: 'Screening' },
+  { href: '/placements', label: 'Placements' },
 ]
 
 export default function Nav({ active }: { active?: string }) {
@@ -19,39 +16,43 @@ export default function Nav({ active }: { active?: string }) {
     <nav style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '0',
-      padding: '0.85rem 2.5rem',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(15,23,42,0.97)',
+      height: '56px',
+      padding: '0 2.5rem',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
+      background: '#0f0f11',
       position: 'sticky',
       top: 0,
       zIndex: 100,
       backdropFilter: 'blur(10px)',
     }}>
       <Link href="/" style={{
-        fontSize: '1.2rem',
+        fontSize: '1.1rem',
         fontWeight: 700,
-        letterSpacing: '-0.03em',
+        letterSpacing: '-0.04em',
         textDecoration: 'none',
-        color: '#f8fafc',
+        color: '#ffffff',
         marginRight: '2rem',
         flexShrink: 0,
       }}>
         Recruit<span style={{ color: '#6366f1' }}>AI</span>
       </Link>
 
-      <div style={{ display: 'flex', gap: '0.15rem', flex: 1, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.1rem', flex: 1 }}>
         {links.map(({ href, label }) => (
-          <Link key={href} href={href} style={{
-            padding: '0.38rem 0.8rem',
-            borderRadius: '0.4rem',
-            fontSize: '0.84rem',
-            textDecoration: 'none',
-            fontWeight: active === href ? 600 : 400,
-            color: active === href ? '#a5b4fc' : '#64748b',
-            background: active === href ? 'rgba(99,102,241,0.1)' : 'transparent',
-            transition: 'color 0.15s',
-          }}>
+          <Link
+            key={href}
+            href={href}
+            className={`nav-link${active === href ? ' active' : ''}`}
+            style={{
+              padding: '0.35rem 0.85rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.83rem',
+              textDecoration: 'none',
+              fontWeight: active === href ? 500 : 400,
+              color: active === href ? '#ffffff' : '#71717a',
+              background: active === href ? 'rgba(255,255,255,0.09)' : 'transparent',
+            }}
+          >
             {label}
           </Link>
         ))}

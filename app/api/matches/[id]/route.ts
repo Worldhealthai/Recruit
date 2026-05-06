@@ -30,3 +30,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await prisma.match.delete({ where: { id: params.id } })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
+}

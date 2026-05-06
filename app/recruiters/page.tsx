@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import EmptyState from '../components/EmptyState'

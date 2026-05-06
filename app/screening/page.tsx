@@ -2,6 +2,7 @@ import Link from 'next/link'
 import PageShell from '../components/PageShell'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 async function getScreening() {

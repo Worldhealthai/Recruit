@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "RecruitAI Sourcer",
+  "version": "1.0.0",
+  "description": "Save candidate profiles from LinkedIn, CV Library, Indeed and Reed directly into RecruitAI.",
+
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["<all_urls>"],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16":  "icons/16.png",
+      "48":  "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/in/*"],
+      "js": ["content/common.js", "content/linkedin.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.cv-library.co.uk/candidate-profile/*", "https://www.cv-library.co.uk/candidates/*"],
+      "js": ["content/common.js", "content/cvlibrary.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://uk.indeed.com/r/*", "https://www.indeed.com/r/*"],
+      "js": ["content/common.js", "content/indeed.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.reed.co.uk/candidates/*"],
+      "js": ["content/common.js", "content/reed.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "icons": {
+    "16":  "icons/16.png",
+    "48":  "icons/48.png",
+    "128": "icons/128.png"
+  }
+}

@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
+// ── Data ─────────────────────────────────────────────────────────────────────
+
 const AVAILABILITY = [
   { value: 'ACTIVELY_LOOKING', label: 'Actively Looking', color: '#22c55e' },
   { value: 'OPEN_TO_OFFERS',   label: 'Open to Offers',  color: '#f59e0b' },
@@ -23,104 +25,164 @@ const SENIORITY = [
   { value: 'C_SUITE',        label: 'C-Suite / Executive' },
 ]
 
-// 130+ skills organised by domain for the search experience
-export const ALL_SKILLS = [
-  // Software Engineering
-  'TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Kotlin', 'Swift', 'C#', 'C++', 'Rust',
-  'PHP', 'Ruby', 'Scala', 'Perl', 'R', 'MATLAB',
-  // Frontend
-  'React', 'Vue', 'Angular', 'Next.js', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS', 'SASS',
-  'React Native', 'Flutter',
-  // Backend & APIs
-  'Node.js', 'Django', 'FastAPI', 'Flask', 'Spring Boot', 'Laravel', 'Rails', 'Express',
-  'GraphQL', 'REST APIs', 'gRPC', 'Microservices',
-  // Data & Databases
-  'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Cassandra', 'DynamoDB',
-  'SQL', 'NoSQL', 'dbt', 'Airflow', 'Kafka', 'Spark', 'Hadoop',
-  // Cloud & Infrastructure
-  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'Ansible', 'Helm',
-  'CI/CD', 'GitHub Actions', 'Jenkins', 'Linux', 'Bash',
-  // Data Science & AI
-  'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'PyTorch', 'TensorFlow',
-  'scikit-learn', 'Data Analysis', 'Power BI', 'Tableau', 'Looker', 'Databricks',
-  // Product & Delivery
-  'Product Management', 'Agile', 'Scrum', 'PRINCE2', 'Jira', 'Confluence',
-  'OKRs', 'Roadmapping', 'A/B Testing', 'User Research', 'Figma', 'Sketch',
-  // Marketing & Digital
-  'SEO', 'PPC', 'Google Ads', 'Meta Ads', 'Content Marketing', 'Email Marketing',
-  'CRM', 'HubSpot', 'Salesforce', 'Marketo', 'Google Analytics', 'Social Media',
-  'Brand Management', 'PR', 'Copywriting', 'Podcast Production',
-  // Finance & Accounting
-  'Financial Modelling', 'Excel (Advanced)', 'SAP', 'Oracle Financials',
-  'Management Accounts', 'Financial Reporting', 'Budgeting & Forecasting',
-  'Tax Compliance', 'Audit', 'Payroll',
-  // HR & People
-  'HR Management', 'Talent Acquisition', 'L&D', 'HRIS', 'Workday',
-  'Employee Relations', 'Compensation & Benefits', 'TUPE', 'Organisational Design',
-  // Legal & Compliance
-  'Contract Law', 'GDPR', 'Compliance', 'Legal Research', 'Due Diligence',
-  'Employment Law', 'Corporate Law', 'IP Law', 'Regulatory Affairs', 'AML / KYC',
-  // Retail & Buying
-  'Buying & Merchandising', 'Category Management', 'Range Planning',
-  'Supplier Negotiation', 'Stock Management', 'Visual Merchandising', 'Ecommerce Trading',
-  // Events & Hospitality
-  'Event Management', 'Event Production', 'Hospitality Management',
-  'Food & Beverage', 'Revenue Management', 'Opera PMS', 'Ungerboeck',
-  // Construction & Engineering
-  'AutoCAD', 'Revit', 'BIM', 'Quantity Surveying', 'Construction Management',
-  'Project Engineering', 'Health & Safety (IOSH)', 'CDM Regulations',
-  // Healthcare & Life Sciences
-  'Nursing', 'Clinical Research', 'GCP', 'Pharmacovigilance', 'Medidata Rave',
-  'CDISC / SDTM', 'Medical Coding', 'Physiotherapy', 'Mental Health (MHFA)',
-  // Media & Creative
-  'Broadcast Production', 'Video Editing', 'Adobe Premiere', 'After Effects',
-  'Photoshop', 'Illustrator', 'InDesign', 'Final Cut Pro', 'Motion Graphics',
-  // Logistics & Operations
-  'Supply Chain Management', 'Warehouse Management', 'SAP WM', 'Lean / Six Sigma',
-  'Demand Planning', 'Procurement', 'Fleet Management', 'Last-Mile Delivery',
-  // Soft Skills & Certifications
-  'People Management', 'Stakeholder Management', 'Executive Presentations',
-  'Business Analysis', 'Change Management', 'AWS Certified', 'CISSP', 'CFA',
-  'CIMA', 'CIPD', 'MRICS', 'Driving Licence (Full UK)', 'Forklift Licence',
-].sort()
-
-const UK_CITIES = [
-  'London','Manchester','Birmingham','Leeds','Glasgow','Edinburgh',
-  'Bristol','Cardiff','Liverpool','Newcastle','Sheffield','Nottingham',
-  'Leicester','Southampton','Oxford','Cambridge','Brighton','Reading',
-  'Coventry','Derby','Portsmouth','Plymouth','Exeter','Norwich','York',
+const INDUSTRIES = [
+  'Accounting & Audit', 'Aerospace & Defence', 'Architecture & Design',
+  'Asset Management', 'Automotive', 'Banking', 'Biotech', 'Charity & Non-Profit',
+  'Consulting', 'Construction', 'Cryptocurrency & Blockchain', 'Defence',
+  'Ecommerce', 'EdTech', 'Education', 'Energy', 'Engineering', 'Fashion & Apparel',
+  'Financial Services', 'FMCG', 'Food & Beverage', 'Gaming', 'Government & Public Sector',
+  'Healthcare', 'HR & People', 'Insurance', 'Legal', 'Life Sciences',
+  'Logistics', 'Luxury Goods', 'Manufacturing', 'Marketing & Advertising',
+  'Media & Entertainment', 'Medical Devices', 'Oil & Gas', 'Other',
+  'Pharmaceuticals', 'PR & Communications', 'Private Equity', 'Property Management',
+  'Publishing', 'Real Estate', 'Recruitment & Staffing', 'Renewables & Cleantech',
+  'Retail', 'Sports & Fitness', 'Supply Chain', 'Technology & Software',
+  'Transport & Shipping', 'Travel & Hospitality', 'Utilities', 'Venture Capital',
 ]
 
-const searchInputStyle: React.CSSProperties = {
+const DEPARTMENTS = [
+  'Account Management', 'Accounting', 'Audit', 'Brand', 'Business Development',
+  'Buying & Merchandising', 'Category Management', 'Clinical', 'Compensation & Benefits',
+  'Compliance & Risk', 'Construction', 'Content', 'Contracts', 'Customer Success',
+  'Customer Support', 'Data & Analytics', 'Design & UX', 'DevOps & Infrastructure',
+  'Engineering', 'Executive / C-Suite', 'Facilities', 'Finance', 'FP&A',
+  'General Management', 'Growth', 'HR & People', 'Implementation', 'L&D',
+  'Legal', 'Logistics', 'Marketing', 'Medical Affairs', 'Operations', 'PR',
+  'Product', 'Procurement', 'QA & Testing', 'Real Estate', 'Research & Development',
+  'Retail Operations', 'Revenue Operations', 'Sales', 'Security & Compliance',
+  'SEO & PPC', 'Strategy & Consulting', 'Supply Chain', 'Talent Acquisition',
+  'Tax', 'Treasury',
+]
+
+const COUNTRIES = [
+  'United Kingdom', 'United States', 'Germany', 'France', 'Netherlands',
+  'Ireland', 'Spain', 'Italy', 'Canada', 'Australia', 'Singapore',
+  'United Arab Emirates', 'India', 'South Africa', 'Other',
+]
+
+const UK_REGIONS = [
+  'Greater London', 'South East', 'South West', 'East of England',
+  'East Midlands', 'West Midlands', 'Yorkshire and the Humber',
+  'North West', 'North East', 'Scotland', 'Wales', 'Northern Ireland',
+]
+
+const UK_CITIES = [
+  'London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Edinburgh',
+  'Bristol', 'Cardiff', 'Liverpool', 'Newcastle', 'Sheffield', 'Nottingham',
+  'Leicester', 'Southampton', 'Oxford', 'Cambridge', 'Brighton', 'Reading',
+  'Coventry', 'Derby', 'Portsmouth', 'Plymouth', 'Exeter', 'Norwich', 'York',
+  'Milton Keynes', 'Luton', 'Swindon', 'Aberdeen', 'Dundee',
+]
+
+export const ALL_SKILLS = [
+  'TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Kotlin', 'Swift', 'C#', 'C++', 'Rust',
+  'PHP', 'Ruby', 'Scala', 'R', 'MATLAB',
+  'React', 'Vue', 'Angular', 'Next.js', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS',
+  'React Native', 'Flutter',
+  'Node.js', 'Django', 'FastAPI', 'Flask', 'Spring Boot', 'Laravel', 'Rails',
+  'GraphQL', 'REST APIs', 'gRPC', 'Microservices',
+  'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'DynamoDB',
+  'SQL', 'dbt', 'Airflow', 'Kafka', 'Spark',
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'CI/CD', 'Linux',
+  'Machine Learning', 'Deep Learning', 'NLP', 'PyTorch', 'TensorFlow',
+  'scikit-learn', 'Data Analysis', 'Power BI', 'Tableau', 'Looker', 'Databricks',
+  'Product Management', 'Agile', 'Scrum', 'Jira', 'Figma',
+  'SEO', 'PPC', 'Google Ads', 'Meta Ads', 'HubSpot', 'Salesforce', 'Google Analytics',
+  'Financial Modelling', 'Excel (Advanced)', 'SAP', 'Management Accounts',
+  'HR Management', 'Talent Acquisition', 'Workday', 'CIPD',
+  'Contract Law', 'GDPR', 'Compliance', 'Employment Law', 'AML / KYC',
+  'Buying & Merchandising', 'Category Management', 'Supplier Negotiation',
+  'AutoCAD', 'Revit', 'BIM', 'Quantity Surveying', 'Construction Management',
+  'Nursing', 'Clinical Research', 'GCP', 'Pharmacovigilance',
+  'Video Editing', 'Adobe Premiere', 'After Effects', 'Photoshop', 'Figma',
+  'Supply Chain Management', 'Lean / Six Sigma', 'Procurement',
+  'People Management', 'Stakeholder Management', 'Business Analysis', 'Change Management',
+  'CFA', 'CIMA', 'MRICS', 'AWS Certified', 'CISSP',
+].sort()
+
+// ── Style constants ───────────────────────────────────────────────────────────
+
+const inputStyle: React.CSSProperties = {
   width: '100%',
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: '0.3rem',
-  padding: '0.35rem 0.6rem',
+  borderRadius: '0.4rem',
+  padding: '0.45rem 0.65rem',
   color: '#f8fafc',
-  fontSize: '0.75rem',
+  fontSize: '0.8rem',
   outline: 'none',
   boxSizing: 'border-box',
-  marginBottom: '0.5rem',
+  fontFamily: 'inherit',
 }
 
-function FilterSection({ label, open, onToggle, children }: {
-  label: string; open: boolean; onToggle: () => void; children: React.ReactNode
+const miniInputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '0.3rem',
+  padding: '0.35rem 0.5rem',
+  color: '#f8fafc',
+  fontSize: '0.76rem',
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+}
+
+const selectStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '0.4rem',
+  padding: '0.45rem 0.6rem',
+  color: '#f8fafc',
+  fontSize: '0.8rem',
+  outline: 'none',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontSize: '0.66rem',
+  color: '#64748b',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  display: 'block',
+  marginBottom: '0.3rem',
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function FilterSection({ label, open, onToggle, count, children }: {
+  label: string; open: boolean; onToggle: () => void
+  count?: number; children: React.ReactNode
 }) {
   return (
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: open ? '1rem' : 0 }}>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <button
         onClick={onToggle}
         style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '0.75rem 0', background: 'transparent', border: 'none', cursor: 'pointer',
-          color: '#f1f5f9', fontSize: '0.85rem', fontWeight: 600,
+          padding: '0.65rem 0', background: 'transparent', border: 'none', cursor: 'pointer',
+          color: '#94a3b8', fontSize: '0.78rem', fontWeight: 600, textAlign: 'left',
         }}
       >
-        {label}
-        <span style={{ color: '#475569', fontSize: '0.75rem' }}>{open ? '▲' : '▼'}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          {label}
+          {count != null && count > 0 && (
+            <span style={{
+              background: 'rgba(99,102,241,0.2)', color: '#a5b4fc',
+              borderRadius: '999px', padding: '0 0.4rem',
+              fontSize: '0.6rem', fontWeight: 700,
+            }}>
+              {count}
+            </span>
+          )}
+        </span>
+        <span style={{ color: '#475569', fontSize: '0.75rem', fontWeight: 500 }}>
+          {open ? '−' : '+'}
+        </span>
       </button>
-      {open && <div style={{ paddingBottom: '0.25rem' }}>{children}</div>}
+      {open && <div style={{ paddingBottom: '0.9rem' }}>{children}</div>}
     </div>
   )
 }
@@ -134,9 +196,10 @@ function CheckPill({ label, checked, color, onChange }: {
         type="checkbox"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
-        style={{ accentColor: color ?? '#6366f1', width: '14px', height: '14px', cursor: 'pointer', flexShrink: 0 }}
+        style={{ accentColor: '#6366f1', width: '13px', height: '13px', cursor: 'pointer', flexShrink: 0 }}
       />
-      <span style={{ fontSize: '0.82rem', color: checked ? (color ?? '#a5b4fc') : '#94a3b8' }}>{label}</span>
+      {color && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color, flexShrink: 0 }} />}
+      <span style={{ fontSize: '0.79rem', color: checked ? '#f8fafc' : '#94a3b8' }}>{label}</span>
     </label>
   )
 }
@@ -152,42 +215,40 @@ function SearchableChecklist({ items, selected, onToggle, placeholder }: {
   return (
     <>
       <input
-        type="text"
-        placeholder={placeholder}
-        value={q}
+        type="text" placeholder={placeholder} value={q}
         onChange={e => setQ(e.target.value)}
-        style={searchInputStyle}
+        style={{ ...miniInputStyle, width: '100%', marginBottom: '0.4rem' }}
       />
       {selected.length > 0 && !q && (
-        <div style={{ marginBottom: '0.4rem' }}>
+        <div style={{ marginBottom: '0.4rem', display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
           {selected.map(s => (
             <span key={s} onClick={() => onToggle(s)} style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-              background: 'rgba(99,102,241,0.2)', color: '#a5b4fc',
-              border: '1px solid rgba(99,102,241,0.35)', borderRadius: '999px',
-              padding: '0.1rem 0.5rem', fontSize: '0.7rem', cursor: 'pointer',
-              marginRight: '0.3rem', marginBottom: '0.3rem',
+              display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+              background: 'rgba(99,102,241,0.15)', color: '#a5b4fc',
+              border: '1px solid rgba(99,102,241,0.3)',
+              borderRadius: '999px',
+              padding: '0.1rem 0.5rem', fontSize: '0.67rem', cursor: 'pointer',
             }}>
               {s} ×
             </span>
           ))}
         </div>
       )}
-      <div style={{ maxHeight: '220px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-        {filtered.length === 0 ? (
-          <div style={{ color: '#475569', fontSize: '0.78rem', padding: '0.5rem 0' }}>No results for &ldquo;{q}&rdquo;</div>
-        ) : (
-          filtered.map(item => (
+      <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+        {filtered.length === 0
+          ? <div style={{ color: '#64748b', fontSize: '0.75rem', padding: '0.35rem 0' }}>No results</div>
+          : filtered.map(item => (
             <CheckPill key={item} label={item}
               checked={selected.includes(item)}
               onChange={() => onToggle(item)} />
           ))
-        )}
+        }
       </div>
-      <div style={{ color: '#334155', fontSize: '0.68rem', marginTop: '0.3rem' }}>
-        {filtered.length} of {items.length} shown
-        {selected.length > 0 && ` · ${selected.length} selected`}
-      </div>
+      {selected.length > 0 && (
+        <div style={{ color: '#64748b', fontSize: '0.65rem', marginTop: '0.2rem' }}>
+          {selected.length} selected
+        </div>
+      )}
     </>
   )
 }
@@ -196,18 +257,24 @@ function parseList(v: string | null): string[] {
   return v ? v.split(',').filter(Boolean) : []
 }
 
-export default function CandidateFilters({ totalResults }: { totalResults: number }) {
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function CandidateFilters() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    availability: true, seniority: true, skills: true, location: true,
-    experience: false, prefs: true, notice: false,
+  const [open, setOpen] = useState<Record<string, boolean>>({
+    profile: true,
+    availability: true,
+    skills: false,
+    location: false,
+    experience: false,
+    salary: false,
   })
 
-  const toggleSection = useCallback((key: string) => {
-    setOpenSections(p => ({ ...p, [key]: !p[key] }))
+  const toggle = useCallback((key: string) => {
+    setOpen(p => ({ ...p, [key]: !p[key] }))
   }, [])
 
   const get = (key: string) => searchParams.get(key)
@@ -222,148 +289,267 @@ export default function CandidateFilters({ totalResults }: { totalResults: numbe
     router.push(`${pathname}?${params.toString()}`)
   }, [router, pathname, searchParams])
 
-  const toggleListItem = (key: string, value: string) => {
-    const current = getList(key)
-    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value]
+  const toggleList = (key: string, value: string) => {
+    const cur = getList(key)
+    const next = cur.includes(value) ? cur.filter(v => v !== value) : [...cur, value]
     update({ [key]: next.join(',') || null })
   }
 
-  const hasFilters = Array.from(searchParams.entries()).length > 0
-  const clearAll = () => router.push(pathname)
+  // Count active filters per section (excluding q)
+  const profileCount = [get('title'), get('company'), getList('industry').length > 0, getList('department').length > 0, getList('seniority').length > 0].filter(Boolean).length
+  const locationCount = [get('country'), get('location'), get('region'), get('remote'), get('relocation')].filter(Boolean).length
+  const expCount = [get('min_exp'), get('max_exp'), get('max_notice')].filter(Boolean).length
+  const salaryCount = [get('min_salary'), get('max_salary')].filter(Boolean).length
+
+  // Active count excludes `q` (handled by the search bar)
+  const activeCount = Array.from(searchParams.entries()).filter(([k]) => k !== 'q').length
+
+  const clearFilters = () => {
+    const p = new URLSearchParams(searchParams.toString())
+    Array.from(p.keys()).filter(k => k !== 'q').forEach(k => p.delete(k))
+    router.push(`${pathname}?${p.toString()}`)
+  }
 
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: '0.75rem', padding: '1.25rem', position: 'sticky', top: '80px',
+    <aside style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      borderRadius: '0.75rem',
+      padding: '1rem 1.1rem',
+      position: 'sticky',
+      top: '1.5rem',
+      maxHeight: 'calc(100vh - 3rem)',
+      overflowY: 'auto',
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Filters</div>
-          <div style={{ color: '#475569', fontSize: '0.75rem', marginTop: '0.1rem' }}>{totalResults} candidates</div>
-        </div>
-        {hasFilters && (
-          <button onClick={clearAll} style={{
-            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)',
-            color: '#f87171', borderRadius: '0.3rem', padding: '0.2rem 0.6rem',
-            fontSize: '0.72rem', cursor: 'pointer', fontWeight: 600,
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: '1rem', paddingBottom: '0.9rem',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          Filters
+        </span>
+        {activeCount > 0 && (
+          <button onClick={clearFilters} style={{
+            background: 'none',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#94a3b8', borderRadius: '5px',
+            padding: '0.18rem 0.55rem', fontSize: '0.69rem', cursor: 'pointer',
           }}>
-            Clear all
+            Clear {activeCount}
           </button>
         )}
       </div>
 
-      {/* Keyword search */}
-      <div style={{ marginBottom: '0.75rem' }}>
-        <input
-          type="text"
-          placeholder="Search name or job title..."
-          defaultValue={get('q') ?? ''}
-          onChange={e => update({ q: e.target.value || null })}
-          style={{
-            width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '0.4rem', padding: '0.5rem 0.75rem', color: '#f8fafc',
-            fontSize: '0.82rem', outline: 'none', boxSizing: 'border-box',
-          }}
-        />
-      </div>
+      {/* ── Professional Profile ── */}
+      <FilterSection label="Profile" open={open.profile} onToggle={() => toggle('profile')} count={profileCount}>
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>Job Title</label>
+          <input
+            type="text" placeholder="e.g. Senior Engineer"
+            defaultValue={get('title') ?? ''}
+            onChange={e => update({ title: e.target.value || null })}
+            style={inputStyle}
+          />
+        </div>
 
-      <FilterSection label="Availability" open={openSections.availability} onToggle={() => toggleSection('availability')}>
-        {AVAILABILITY.map(a => (
-          <CheckPill key={a.value} label={a.label} color={a.color}
-            checked={getList('availability').includes(a.value)}
-            onChange={() => toggleListItem('availability', a.value)} />
-        ))}
-      </FilterSection>
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>Employer</label>
+          <input
+            type="text" placeholder="e.g. Google, HSBC…"
+            defaultValue={get('company') ?? ''}
+            onChange={e => update({ company: e.target.value || null })}
+            style={inputStyle}
+          />
+        </div>
 
-      <FilterSection label="Seniority" open={openSections.seniority} onToggle={() => toggleSection('seniority')}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {SENIORITY.map(s => (
-            <CheckPill key={s.value} label={s.label}
-              checked={getList('seniority').includes(s.value)}
-              onChange={() => toggleListItem('seniority', s.value)} />
-          ))}
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>Industry</label>
+          <SearchableChecklist
+            items={INDUSTRIES}
+            selected={getList('industry')}
+            onToggle={v => toggleList('industry', v)}
+            placeholder="Search industries…"
+          />
+        </div>
+
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>Department</label>
+          <SearchableChecklist
+            items={DEPARTMENTS}
+            selected={getList('department')}
+            onToggle={v => toggleList('department', v)}
+            placeholder="Search departments…"
+          />
+        </div>
+
+        <div>
+          <label style={labelStyle}>Seniority</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.02rem' }}>
+            {SENIORITY.map(s => (
+              <CheckPill key={s.value} label={s.label}
+                checked={getList('seniority').includes(s.value)}
+                onChange={() => toggleList('seniority', s.value)} />
+            ))}
+          </div>
         </div>
       </FilterSection>
 
-      <FilterSection label={`Skills${getList('skills').length ? ` (${getList('skills').length})` : ''}`} open={openSections.skills} onToggle={() => toggleSection('skills')}>
+      {/* ── Availability ── */}
+      <FilterSection label="Availability" open={open.availability} onToggle={() => toggle('availability')} count={getList('availability').length}>
+        {AVAILABILITY.map(a => (
+          <CheckPill key={a.value} label={a.label} color={a.color}
+            checked={getList('availability').includes(a.value)}
+            onChange={() => toggleList('availability', a.value)} />
+        ))}
+      </FilterSection>
+
+      {/* ── Skills ── */}
+      <FilterSection label="Skills" open={open.skills} onToggle={() => toggle('skills')} count={getList('skills').length}>
         <SearchableChecklist
           items={ALL_SKILLS}
           selected={getList('skills')}
-          onToggle={v => toggleListItem('skills', v)}
+          onToggle={v => toggleList('skills', v)}
           placeholder={`Search ${ALL_SKILLS.length} skills…`}
         />
       </FilterSection>
 
-      <FilterSection label="Work Preferences" open={openSections.prefs} onToggle={() => toggleSection('prefs')}>
-        <CheckPill label="Remote open" checked={get('remote') === '1'} color="#22c55e"
-          onChange={v => update({ remote: v ? '1' : null })} />
-        <CheckPill label="Open to relocation" checked={get('relocation') === '1'} color="#3b82f6"
-          onChange={v => update({ relocation: v ? '1' : null })} />
-      </FilterSection>
-
-      <FilterSection label="Location" open={openSections.location} onToggle={() => toggleSection('location')}>
-        <select
-          value={get('location') ?? ''}
-          onChange={e => update({ location: e.target.value || null })}
-          style={{
-            width: '100%', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '0.4rem', padding: '0.45rem 0.6rem', color: get('location') ? '#f8fafc' : '#64748b',
-            fontSize: '0.82rem', outline: 'none', cursor: 'pointer',
-          }}
-        >
-          <option value="">Any location</option>
-          {UK_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </FilterSection>
-
-      <FilterSection label="Experience (years)" open={openSections.experience} onToggle={() => toggleSection('experience')}>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <input type="number" placeholder="Min" min={0} max={40}
-            defaultValue={get('min_exp') ?? ''}
-            onChange={e => update({ min_exp: e.target.value || null })}
-            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
-          />
-          <span style={{ color: '#475569', fontSize: '0.8rem' }}>to</span>
-          <input type="number" placeholder="Max" min={0} max={40}
-            defaultValue={get('max_exp') ?? ''}
-            onChange={e => update({ max_exp: e.target.value || null })}
-            style={{ width: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.3rem', padding: '0.4rem 0.5rem', color: '#f8fafc', fontSize: '0.8rem', outline: 'none' }}
-          />
-          <span style={{ color: '#475569', fontSize: '0.75rem' }}>yrs</span>
+      {/* ── Location & Mobility ── */}
+      <FilterSection label="Location" open={open.location} onToggle={() => toggle('location')} count={locationCount}>
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>Country</label>
+          <select value={get('country') ?? ''} onChange={e => update({ country: e.target.value || null })} style={selectStyle}>
+            <option value="">Any country</option>
+            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.5rem' }}>
+
+        <div style={{ marginBottom: '0.55rem' }}>
+          <label style={labelStyle}>City</label>
+          <select value={get('location') ?? ''} onChange={e => update({ location: e.target.value || null })} style={selectStyle}>
+            <option value="">Any city</option>
+            {UK_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: '0.7rem' }}>
+          <label style={labelStyle}>Region</label>
+          <select value={get('region') ?? ''} onChange={e => update({ region: e.target.value || null })} style={selectStyle}>
+            <option value="">Any region</option>
+            {UK_REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.6rem' }}>
+          <label style={labelStyle}>Work Arrangement</label>
+          <CheckPill label="Open to remote" checked={get('remote') === '1'} color="#22c55e"
+            onChange={v => update({ remote: v ? '1' : null })} />
+          <CheckPill label="Open to relocation" checked={get('relocation') === '1'} color="#818cf8"
+            onChange={v => update({ relocation: v ? '1' : null })} />
+        </div>
+      </FilterSection>
+
+      {/* ── Experience & Notice ── */}
+      <FilterSection label="Experience & Notice" open={open.experience} onToggle={() => toggle('experience')} count={expCount}>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label style={labelStyle}>Years of Experience</label>
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <input type="number" placeholder="Min" min={0} max={40}
+              defaultValue={get('min_exp') ?? ''}
+              onChange={e => update({ min_exp: e.target.value || null })}
+              style={{ ...miniInputStyle, width: '64px' }}
+            />
+            <span style={{ color: '#64748b', fontSize: '0.75rem' }}>–</span>
+            <input type="number" placeholder="Max" min={0} max={40}
+              defaultValue={get('max_exp') ?? ''}
+              onChange={e => update({ max_exp: e.target.value || null })}
+              style={{ ...miniInputStyle, width: '64px' }}
+            />
+            <span style={{ color: '#64748b', fontSize: '0.72rem' }}>yrs</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+            {[
+              { label: '0–2', min: '0', max: '2' },
+              { label: '3–5', min: '3', max: '5' },
+              { label: '6–10', min: '6', max: '10' },
+              { label: '10+', min: '10', max: '' },
+            ].map(r => {
+              const active = get('min_exp') === r.min && get('max_exp') === (r.max || null)
+              return (
+                <button key={r.label}
+                  onClick={() => update({ min_exp: r.min || null, max_exp: r.max || null })}
+                  style={{
+                    background: active ? 'rgba(99,102,241,0.18)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.09)'}`,
+                    color: active ? '#a5b4fc' : '#4b5a70',
+                    borderRadius: '5px', padding: '0.18rem 0.5rem',
+                    fontSize: '0.71rem', cursor: 'pointer',
+                  }}>
+                  {r.label}y
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Max Notice Period</label>
           {[
-            { label: '0–2 yrs', min: '0', max: '2' },
-            { label: '3–5 yrs', min: '3', max: '5' },
-            { label: '6–10 yrs', min: '6', max: '10' },
-            { label: '10+ yrs', min: '10', max: '' },
-          ].map(r => (
-            <button key={r.label} onClick={() => update({ min_exp: r.min || null, max_exp: r.max || null })}
-              style={{
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '0.3rem', padding: '0.2rem 0.5rem', color: '#94a3b8',
-                fontSize: '0.72rem', cursor: 'pointer',
-              }}>
-              {r.label}
-            </button>
+            { value: '0',  label: 'Immediate' },
+            { value: '14', label: 'Up to 2 weeks' },
+            { value: '30', label: 'Up to 1 month' },
+            { value: '60', label: 'Up to 2 months' },
+            { value: '90', label: 'Up to 3 months' },
+          ].map(n => (
+            <CheckPill key={n.value} label={n.label}
+              checked={get('max_notice') === n.value}
+              onChange={v => update({ max_notice: v ? n.value : null })} />
           ))}
         </div>
       </FilterSection>
 
-      <FilterSection label="Notice Period" open={openSections.notice} onToggle={() => toggleSection('notice')}>
-        {[
-          { value: '0', label: 'Immediate / Available now' },
-          { value: '14', label: 'Up to 2 weeks' },
-          { value: '30', label: 'Up to 1 month' },
-          { value: '60', label: 'Up to 2 months' },
-          { value: '90', label: 'Up to 3 months' },
-        ].map(n => (
-          <CheckPill key={n.value} label={n.label}
-            checked={get('max_notice') === n.value}
-            onChange={v => update({ max_notice: v ? n.value : null })} />
-        ))}
+      {/* ── Salary ── */}
+      <FilterSection label="Salary" open={open.salary} onToggle={() => toggle('salary')} count={salaryCount}>
+        <label style={labelStyle}>Annual (£)</label>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <input type="number" placeholder="Min" step={5000}
+            defaultValue={get('min_salary') ?? ''}
+            onChange={e => update({ min_salary: e.target.value || null })}
+            style={{ ...miniInputStyle, width: '85px' }}
+          />
+          <span style={{ color: '#64748b', fontSize: '0.75rem' }}>–</span>
+          <input type="number" placeholder="Max" step={5000}
+            defaultValue={get('max_salary') ?? ''}
+            onChange={e => update({ max_salary: e.target.value || null })}
+            style={{ ...miniInputStyle, width: '85px' }}
+          />
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+          {[
+            { label: '<£40k',    max: '40000' },
+            { label: '£40–60k',  min: '40000', max: '60000' },
+            { label: '£60–80k',  min: '60000', max: '80000' },
+            { label: '£80–100k', min: '80000', max: '100000' },
+            { label: '£100k+',   min: '100000' },
+          ].map(r => {
+            const active = get('min_salary') === (r.min ?? null) && get('max_salary') === (r.max ?? null)
+            return (
+              <button key={r.label}
+                onClick={() => update({ min_salary: r.min ?? null, max_salary: r.max ?? null })}
+                style={{
+                  background: active ? 'rgba(99,102,241,0.18)' : 'transparent',
+                  border: `1px solid ${active ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.09)'}`,
+                  color: active ? '#a5b4fc' : '#4b5a70',
+                  borderRadius: '5px', padding: '0.18rem 0.5rem',
+                  fontSize: '0.71rem', cursor: 'pointer',
+                }}>
+                {r.label}
+              </button>
+            )
+          })}
+        </div>
       </FilterSection>
-    </div>
+    </aside>
   )
 }
